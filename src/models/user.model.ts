@@ -111,6 +111,11 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp: any) {
     return false;
   };
 
+// Match user entered password to hashed password in database
+userSchema.methods.matchTransactionPin = function (enteredPin: any) {
+	return bcrypt.compare(enteredPin, this.pin);
+  };
+  
 const User = mongoose.model<Iuser>('User', userSchema)
 
 export default User;

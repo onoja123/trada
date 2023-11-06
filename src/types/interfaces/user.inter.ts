@@ -30,5 +30,6 @@ export interface Iuser extends Document{
     correctPassword(candidatePassword: string, userPassword: string): Promise<boolean>;
     generateAuthToken(): string;
     changedPasswordAfter(JWTTimestamp: any): boolean;
+    matchTransactionPin(enteredPin: any): string;
     createdAt: Date;
 }

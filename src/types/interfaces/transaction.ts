@@ -1,11 +1,11 @@
 import { Document, Schema } from "mongoose";
 
-export interface Ihistory extends Document{
+export interface Itransaction extends Document{
     _user: Schema.Types.ObjectId;
     _wallet: Schema.Types.ObjectId;
     date: Date;
     amount: Number;
-    bank: Boolean;
+    bank: string;
     reference: String;
     detail: String;
     from: String;

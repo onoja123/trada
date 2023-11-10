@@ -25,6 +25,27 @@ const userSchema = new Schema<Iuser>({
 		required: true,
 		select: false,
 	},
+	dateOfBirth: {
+		type: Date
+	},
+	gender:{
+		type: String
+	},
+	country: {
+		type: String,
+	},
+	state:{
+		type: String,
+	},
+	apartment:{
+		type: String,
+	},
+	street: {
+		type: String,
+	},
+	city:{
+		type: String,
+	},
 	image: {
 		type: String,
 		default: '',
@@ -34,7 +55,17 @@ const userSchema = new Schema<Iuser>({
 		required: true,
 		default: false,
 	},
+	dateJoined:{
+		type: Date,
+		defualt: Date.now()
+	},	
 	isAdmin: {
+		type: Boolean,
+		required: true,
+		default: false,
+		select: false,
+	},
+	profileSet: {
 		type: Boolean,
 		required: true,
 		default: false,
@@ -54,7 +85,7 @@ const userSchema = new Schema<Iuser>({
         type: Date
     },
     otp: {
-        type: Number,
+        type: String,
     },
 	resetPasswordToken: String,
 	resetPasswordExpire: Date,

@@ -19,11 +19,12 @@ export interface Iuser extends Document{
     image?: string | ''; 
     dateJoined: Date;
     isActive: boolean;
+    profileSet: boolean;
     isAdmin: boolean;
     wallet: Schema.Types.ObjectId,
     verificationToken: string;
     verificationTokenExpires: Date;
-    otp: number | null; 
+    otp: string | null; 
     resetPasswordToken: number;
     resetPasswordExpire: Date;
     verifyEmailToken: string;

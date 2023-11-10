@@ -4,9 +4,14 @@ import catchAsync from '../utils/catchAsync';
 import User from '../models/user.model';
 import jwt from 'jsonwebtoken'; 
 const { promisify } = require('util');
-import { Iuser } from "../types/interfaces/user.inter";
+import { Iuser } from '../types/interfaces/user.inter';
 import sendEmail from '../utils/sendEmail';
-const otpGenerator = require('otp-generator');
+import otpGenerator from 'otp-generator';
+import twilio from 'twilio';
+
+// const accountSid = 'YOUR_TWILIO_ACCOUNT_SID' || ''
+// const authToken = 'YOUR_TWILIO_AUTH_TOKEN' || ''
+// const client = new twilio(accountSid, authToken);
 
 
 declare global {
@@ -46,76 +51,72 @@ const createSendToken = (user: Iuser, statusCode: number, res: Response): void =
     });
   };
   
-/**
- * @author Okpe Onoja <okpeonoja18@gmail.com>
- * @description Signup for Attendee Controller
- * @route `/api/auth/signup`
- * @access Public
- * @type POST
- */
-export const signUp = catchAsync(async(req: Request, res: Response, next: NextFunction) => {
-    const { phone } = req.body;
-  // Check for required fields
-  if (!phone) {
-    return res.status(401).send({
-      success: false,
-      message: 'Phone number is required',
-    });
-  }
+// /**
+//  * @author Okpe Onoja <okpeonoja18@gmail.com>
+//  * @description Signup  Controller
+//  * @route `/api/auth/signup`
+//  * @access Public
+//  * @type POST
+//  */
+// export const signUp = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+//   const { phone } = req.body;
 
-  const existingNumber = await User.findOne({ phone });
+//   // Check for required fields
+//   if (!phone) {
+//     return res.status(401).send({
+//       success: false,
+//       message: 'Phone number is required',
+//     });
+//   }
 
-  // Check if email exists
-  if (existingNumber) {
-    return res.status(400).json({
-      success: false,
-      message: 'The Phone number is already taken',
-    });
-  }
+//   const existingNumber = await User.findOne({ phone });
 
-    const newUser = await User.create({
-      phone,
-      otp: '1234',
-    });
+//   // Check if phone number exists
+//   if (existingNumber) {
+//     return res.status(400).json({
+//       success: false,
+//       message: 'The Phone number is already taken',
+//     });
+//   }
 
-    const otp = otpGenerator.generate(4, {
-      upperCaseAlphabets: false,
-      specialChars: false,
-      lowerCaseAlphabets: false,
-    });
-  
-    console.log(otp);
-  
-    newUser.otp = otp;
+//   const newUser = await User.create({
+//     phone,
+//     otp: '1234',
+//   });
 
-    try{
+//   const otp = otpGenerator.generate(4, {
+//     upperCaseAlphabets: false,
+//     specialChars: false,
+//     lowerCaseAlphabets: false,
+//   });
 
-      const message = `
-      Hi there, Welcome to Trada 🚀
-      Before doing anything, we recommend verifying your account to use most of the features available,
-      here is your otp verification code ${otp}`;
-      
+//   newUser.otp = otp;
 
+//   try {
+//     // Send OTP via Twilio
+//     const message = `Hi there, Welcome to Trada 🚀
+//     Before doing anything, we recommend verifying your account to use most of the features available,
+//     here is your OTP verification code: ${otp}`;
 
-    await sendEmail({
-      email: newUser.email,
-      subject: 'Welcome to Welcome to misan 🚀',
-      message,
-    });
+//     await client.messages.create({
+//       body: message,
+//       from: 'YOUR_TWILIO_PHONE_NUMBER',
+//       to: phone, // User's phone number
+//     });
 
-    // If the email was sent successfully, proceed to user creation
-    await newUser.save({ validateBeforeSave: false });
+//     // If the OTP message was sent successfully, proceed to user creation
+//     await newUser.save({ validateBeforeSave: false });
 
+//     createSendToken(newUser, 201, res);
+//   } catch (err) {
+//     console.log(err);
+//     return res.status(500).json({
+//       success: false,
+//       message: "Couldn't create the user",
+//     });
+//   }
+// });
 
-    createSendToken(newUser, 201, res);
-  } catch (err) {
-    console.log(err);
-    return res.status(500).json({
-      success: false,
-      message: "Couldn't create the user",
-    });
-  }
-})
 
 /**
  * @author Okpe Onoja <okpeonoja18@gmail.com>

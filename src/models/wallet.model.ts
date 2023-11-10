@@ -7,11 +7,19 @@ const walletSchema = new Schema<Iwallet>({
         ref: 'user',
         required: true
       },
-    amount: {
-        type: Number,
-        default: 0
+      _transaction: {
+        type: mongoose.SchemaTypes.ObjectId,
+        ref: 'user',
+        required: true
       },
-  
+      balance: {
+        type: Number,
+        defaul: 0
+    },
+      amount: {
+          type: Number,
+          default: 0
+        },
       currency: {
         type: String,
         default: 'naira'
@@ -21,7 +29,6 @@ const walletSchema = new Schema<Iwallet>({
         type: Boolean,
         default: false
       },
-  
       inflow: {
         type: Number,
         default: 0

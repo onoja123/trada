@@ -16,9 +16,11 @@ export interface Iuser extends Document{
     street: string;
     city: string;
     postalCode: number;
-    image?: string | ''; 
+    image?: string | '';
+    tagNumber: string; 
     dateJoined: Date;
     isActive: boolean;
+    isKycVerified: boolean;
     profileSet: boolean;
     isAdmin: boolean;
     wallet: Schema.Types.ObjectId,

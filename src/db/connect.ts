@@ -15,7 +15,7 @@ const connectToDatabase = async () =>{
         setTimeout(() => {
           console.log('Retrying connection...');
           connectToDatabase();
-        }, 5000);
+        }, 3000);
       } else {
 
         console.error('Other Error:', error);

@@ -1,6 +1,10 @@
 import express, { Application, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import authRoute from '../src/routes/auth.route';
+import userRoute from '../src/routes/user.route';
+import walletRoute from '../src/routes/wallet.route'
+import globalErrorHandler from './controllers/error.controller';
 
 dotenv.config();
 const app: Application = express();
@@ -17,6 +21,16 @@ app.use(cors({
 }));
 
 // Use the  routes
+
+app.use('/api/v1/auth', authRoute);
+
+app.use('/api/v1/user', userRoute);
+
+app.use('/api/v1/wallet', walletRoute);
+
+
+
+app.use(globalErrorHandler)
 
 app.get('/', (req:Request, res:Response) => {
   res.send('Server live ⚡️');

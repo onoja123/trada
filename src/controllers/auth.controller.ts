@@ -7,11 +7,11 @@ const { promisify } = require('util');
 import { Iuser } from '../types/interfaces/user.inter';
 import sendEmail from '../utils/sendEmail';
 import otpGenerator from 'otp-generator';
-import twilio from 'twilio';
+import { Twilio } from "twilio";
 
-// const accountSid = 'YOUR_TWILIO_ACCOUNT_SID' || ''
-// const authToken = 'YOUR_TWILIO_AUTH_TOKEN' || ''
-// const client = new twilio(accountSid, authToken);
+const accountSid: string = process.env.TWILIO_ACCOUNT_SID|| '';
+const authToken: string = process.env.TWILIO_AUTH_TOKEN || '';
+const client = new Twilio(accountSid, authToken);
 
 
 declare global {
@@ -58,64 +58,63 @@ const createSendToken = (user: Iuser, statusCode: number, res: Response): void =
 //  * @access Public
 //  * @type POST
 //  */
-// export const signUp = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-//   const { phone } = req.body;
+export const signUp = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  const { phone } = req.body;
 
-//   // Check for required fields
-//   if (!phone) {
-//     return res.status(401).send({
-//       success: false,
-//       message: 'Phone number is required',
-//     });
-//   }
+  // Check for required fields
+  if (!phone) {
+    return res.status(401).send({
+      success: false,
+      message: 'Phone number is required',
+    });
+  }
 
-//   const existingNumber = await User.findOne({ phone });
+  const existingNumber = await User.findOne({ phone });
 
-//   // Check if phone number exists
-//   if (existingNumber) {
-//     return res.status(400).json({
-//       success: false,
-//       message: 'The Phone number is already taken',
-//     });
-//   }
+  // Check if phone number exists
+  if (existingNumber) {
+    return res.status(400).json({
+      success: false,
+      message: 'The Phone number is already taken',
+    });
+  }
 
-//   const newUser = await User.create({
-//     phone,
-//     otp: '1234',
-//   });
+  const newUser = await User.create({
+    phone
+  });
 
-//   const otp = otpGenerator.generate(4, {
-//     upperCaseAlphabets: false,
-//     specialChars: false,
-//     lowerCaseAlphabets: false,
-//   });
+  const otp = otpGenerator.generate(4, {
+    upperCaseAlphabets: false,
+    specialChars: false,
+    lowerCaseAlphabets: false,
+  });
 
-//   newUser.otp = otp;
+  newUser.otp = otp;
 
-//   try {
-//     // Send OTP via Twilio
-//     const message = `Hi there, Welcome to Trada 🚀
-//     Before doing anything, we recommend verifying your account to use most of the features available,
-//     here is your OTP verification code: ${otp}`;
+  try {
+    // Send OTP via Twilio
+    const message = `Hi, thanks for signing up for TradaPay!🚀
+    Your OTP ${otp} is, Enter this code to verify your account and 
+    start exploring all that we have to offer.`;
 
-//     await client.messages.create({
-//       body: message,
-//       from: 'YOUR_TWILIO_PHONE_NUMBER',
-//       to: phone, // User's phone number
-//     });
+    await client.messages.create({
+      body: message,
+      from: process.env.TWILIO_PHONE_NUMBER,
+      to: phone, 
+    });
 
-//     // If the OTP message was sent successfully, proceed to user creation
-//     await newUser.save({ validateBeforeSave: false });
+    // If the OTP message was sent successfully, proceed to user creation
+    await newUser.save({ validateBeforeSave: false });
 
-//     createSendToken(newUser, 201, res);
-//   } catch (err) {
-//     console.log(err);
-//     return res.status(500).json({
-//       success: false,
-//       message: "Couldn't create the user",
-//     });
-//   }
-// });
+    createSendToken(newUser, 201, res);
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      success: false,
+      message: "Couldn't create the user",
+    });
+  }
+});
 
 
 /**
@@ -155,7 +154,6 @@ export const verify = catchAsync(async(req: Request, res: Response, next: NextFu
   
     //then change the user's status to active
     user.isActive = true;
-    user.isAdmin = true;
   
     user.otp = null;
   
@@ -171,21 +169,25 @@ export const verify = catchAsync(async(req: Request, res: Response, next: NextFu
  * @access Public
  * @type POST
  */
+export const login = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  // Check if email or phone and password exist
+  const { email, phone, password } = req.body;
 
-export const login = catchAsync(async(req: Request, res: Response, next: NextFunction) => {
-      // Check if user and password exist
-  const { email, password } = req.body;
-
-  // Check if email and password exist
-  if (!email || !password) {
-    return res.status(400).send({
+  // Check if either email or phone and password exist
+  if ((!email && !phone) || !password) {
+    return res.status(400).json({
       success: false,
-      message: 'Please provide email and password!', 
+      message: 'Please provide either email or phone and password!',
     });
   }
 
   // Check if user exists and password is correct
-  const user = await User.findOne({ email }).select('+password');
+  let user;
+  if (email) {
+    user = await User.findOne({ email }).select('+password');
+  } else if (phone) {
+    user = await User.findOne({ phone }).select('+password');
+  }
 
   if (!user) {
     return res.status(404).json({
@@ -197,21 +199,19 @@ export const login = catchAsync(async(req: Request, res: Response, next: NextFun
   if (user.isActive === false) {
     return res.status(400).json({
       success: false,
-      message: 'Please verify your email and try again.',
+      message: 'Please verify your email or phone and try again.',
     });
   }
 
-  if (!user || !(await user.correctPassword(password, user.password))) {
-    return res.status(401).send({
+  if (!(await user.correctPassword(password, user.password))) {
+    return res.status(401).json({
       success: false,
-      message: 'Incorrect email or password', 
+      message: 'Incorrect email, phone, or password',
     });
-    
   }
-
 
   createSendToken(user, 200, res);
-})
+});
 
 /**
  * @author Okpe Onoja <okpeonoja18@gmail.com>

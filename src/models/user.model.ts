@@ -12,7 +12,6 @@ const userSchema = new Schema<Iuser>({
 	},
 	email: {
 		type: String,
-		required: true,
 		unique: true,
 		lowercase: true,
 		select: false,
@@ -22,7 +21,6 @@ const userSchema = new Schema<Iuser>({
 	},
 	password: {
 		type: String,
-		required: true,
 		select: false,
 	},
 	dateOfBirth: {
@@ -50,6 +48,9 @@ const userSchema = new Schema<Iuser>({
 		type: String,
 		default: '',
 	},
+	tagNumber:{
+		type: String,
+	},
 	isActive: {
 		type: Boolean,
 		required: true,
@@ -63,13 +64,16 @@ const userSchema = new Schema<Iuser>({
 		type: Boolean,
 		required: true,
 		default: false,
-		select: false,
+	},
+	isKycVerified:{
+		type: Boolean,
+		required: true,
+		default: false,
 	},
 	profileSet: {
 		type: Boolean,
 		required: true,
 		default: false,
-		select: false,
 	},
 	wallet: [
 		{

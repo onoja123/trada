@@ -5,7 +5,7 @@ import bcrypt from "bcrypt";
 import User from '../models/user.model';
 import Kyc from '../models/kyc.model'
 import Wallet from '../models/wallet.model';
-import { Iuser } from "../types/interfaces/user.inter";
+
 
 /**
  * @author Okpe Onoja <okpeonoja18@gmail.com>
@@ -52,8 +52,8 @@ export const getWallet = catchAsync(async(req: Request, res: Response, next: Nex
         }
 
         res.status(200).json({
-            succes: true,
-            wallet
+            success: true,
+            data: wallet
         })
     } catch (error) {
         return next(new AppError(
@@ -147,7 +147,7 @@ export const sendMoneyToUser = catchAsync(async(req:Request, res:Response, next:
 /**
  * @author Okpe Onoja <okpeonoja18@gmail.com>
  * @description fund wallet
- * @route `/api/wallet/fundbank`
+ * @route `/api/wallet/fundwalbank`
  * @access PRIVATE
  * @type POST
  */
@@ -165,7 +165,7 @@ export const fundWalletBanktransfer = catchAsync(async(req:Request, res:Response
 /**
  * @author Okpe Onoja <okpeonoja18@gmail.com>
  * @description fund wallet
- * @route `/api/wallet/fundcard`
+ * @route `/api/wallet/fundwalcard`
  * @access PRIVATE
  * @type POST
  */

@@ -5,7 +5,9 @@ export interface Iwallet extends Document{
     _transaction: Schema.Types.ObjectId;
     balance: Number;
     amount: Number;
-    currency: string;
+    accountNumber: string;
+    bankCode: string;
+
     locked: Boolean;
     inflow: Number;
     outflow: Number;

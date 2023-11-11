@@ -5,10 +5,11 @@ import bcrypt from "bcrypt";
 import User from '../models/user.model';
 import Kyc from '../models/kyc.model'
 import qrcode from 'qrcode';
+import generateTagNumber from '../utils/tagGen';
 import { Iuser } from "../types/interfaces/user.inter";
 import {
   verifyBvn
-}from '../controllers/kyc.controller'
+}from '../services/kyc.service'
 
 declare global {
     namespace Express {
@@ -18,24 +19,6 @@ declare global {
     }
   }
 
-
-  
-
-// Function to generate tagNumber
-async function generateTagNumber(): Promise<String> {
-  const lastUser = await User.findOne({}, {}, { sort: { 'createdAt': -1 } });
-
-  let count = 1;
-  if (lastUser && lastUser.tagNumber) {
-      const lastTagNumber = lastUser.tagNumber.slice(3);
-      count = parseInt(lastTagNumber, 10) + 1;
-  }
-
-  const formattedCount = count.toString().padStart(3, '0');
-  const tagNumber = `TRA${formattedCount}`;
-
-  return tagNumber;
-}
 
 
 /**
@@ -133,9 +116,6 @@ export const setResiAdd = catchAsync(async(req: Request, res: Response, next: Ne
           postalCode
         };
 
-        console.log('Updating user residence address with data:', data);
-
-
         const newData = await User.findOneAndUpdate({ _id: id }, data, { new: true });
 
         if (!newData) {
@@ -169,12 +149,10 @@ export const setResiAdd = catchAsync(async(req: Request, res: Response, next: Ne
  */
 export const setUpAcc = catchAsync(async(req:Request, res:Response, next: NextFunction)=>{
   try {
-    console.log('Request received to set residence address:', req.body);
 
       const { id } = req.params;
 
       if (!req.user) {
-        console.log('User not authenticated');
         return next(new AppError(
           'User not authenticated', 
           401
@@ -192,10 +170,16 @@ export const setUpAcc = catchAsync(async(req:Request, res:Response, next: NextFu
     }
 
     if(user.isActive === false){
-      console.log('User not verified with OTP');
         return next(new AppError(
           'Please verify your otp and try again', 
           401
+      ));
+    }
+
+      if (!user.isKycVerified === false) {
+        return next(new AppError(
+          'Please verify your bvn and try again', 
+          404
       ));
     }
 
@@ -213,7 +197,6 @@ export const setUpAcc = catchAsync(async(req:Request, res:Response, next: NextFu
       const existingUsername = await User.findOne({ username });
 
       if (existingUsername && existingUsername._id.toString() !== id) {
-          console.log('Username already taken');
           return next(new AppError('Username is already taken', 400));
       }
 
@@ -221,12 +204,12 @@ export const setUpAcc = catchAsync(async(req:Request, res:Response, next: NextFu
       const existingEmail = await User.findOne({ email });
 
       if (existingEmail && existingEmail._id.toString() !== id) {
-          console.log('Email already taken');
           return next(new AppError('Email is already taken', 400));
       }
         // Generate tagNumber
         const tagNumber = await generateTagNumber();
-                // Hash the password
+                
+      // Hash the password
       const hashedPassword = await bcrypt.hash(password, 12);
 
         const data = {
@@ -251,7 +234,6 @@ export const setUpAcc = catchAsync(async(req:Request, res:Response, next: NextFu
 
     newUser.profileSet = true;
     await newUser.save();
-    console.log('Residence address successfully added:', newUser);
 
     res.status(201).json({
       success: true,
@@ -315,7 +297,10 @@ export const setUpAcc = catchAsync(async(req:Request, res:Response, next: NextFu
             });
         }
     } catch (error) {
-        return next(new AppError('Internal server error', 500));
+      return next(new AppError(
+        'Internal server error', 
+        500
+    ));
     }
 });
 

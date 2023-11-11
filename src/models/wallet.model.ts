@@ -20,22 +20,15 @@ const walletSchema = new Schema<Iwallet>({
           type: Number,
           default: 0
         },
-      currency: {
+        accountNumber: {
         type: String,
-        default: 'naira'
       },
-  
+      bankCode:{
+        type: String,
+      },
       locked: {
         type: Boolean,
         default: false
-      },
-      inflow: {
-        type: Number,
-        default: 0
-      },
-      outflow: {
-        type: Number,
-        default: 0
       },
       createdAt: {
         type: Date,

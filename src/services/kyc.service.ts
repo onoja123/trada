@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const monoApiUrl = process.env.MONO_URL || ''
 
-const flwApiKey = process.env.MONO_API_KEY || 'FLWSECK_TEST-eab56b1d3cdf332da191b8dd2b04f22d-X'
+const flutterwaveApiKey = process.env.MONO_API_KEY || 'FLWSECK_TEST-eab56b1d3cdf332da191b8dd2b04f22d-X'
 
 // Helper function to verify bvn using Mono API
 export const initateBvn = async (bvn: string, firstname: string, lastname:string): Promise<boolean> => {
@@ -21,7 +21,7 @@ export const initateBvn = async (bvn: string, firstname: string, lastname:string
             {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${flwApiKey}`,
+                    'Authorization': `Bearer ${flutterwaveApiKey}`,
                 },
             }
         );
@@ -40,7 +40,7 @@ export const verifyBvn = async (reference: string): Promise<boolean> => {
 
         const response = await axios.get(otpVerificationUrl, {
             headers: {
-                'Authorization': `Bearer ${flwApiKey}`,
+                'Authorization': `Bearer ${flutterwaveApiKey}`,
                 'Content-Type': 'application/json',
             },
         });

@@ -19,48 +19,41 @@ import {
  * @access PRIVATE
  * @type GET
  */
-export const createWallet = catchAsync(async(req: Request, res: Response, next: NextFunction) => {
+export const createWallet = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     try {
-                
         if (!req.user) {
-            return next(new AppError(
-                'User not authenticated', 
-                401
-            ));
+            return next(new AppError('User not authenticated', 401));
         }
 
         // Find the user by their _id
         const user = await User.findOne({ _id: req.user._id });
 
         if (!user) {
-            return next(new AppError(
-                'User not found', 
-                404
-            ));
+            return next(new AppError('User not found', 404));
         }
 
-        // Make a POST request to the Blochq.io API to create a wallet for the user
-        const response = await createWalletForUser(user);
+        // Get email from the request, assuming it is available in the request body
+        const email = req.body.email;
+
+        // Make a POST request to the Flutterwave API to create a wallet for the user
+        const response = await createWalletForUser(user, email);
 
         // If the request is successful, save the wallet to the database
-        const wallet = response.data;
-        const savedWallet = await Wallet.create({
-        _user: req.user._id,
-        ...wallet
-        });
+        // const walletData = response.data.data;
+        // const savedWallet = await Wallet.create({
+        //     _user: req.user._id,
+        //     ...walletData,
+        // });
 
         res.status(200).json({
             success: true,
-            data: savedWallet
-        })
+            data: response,
+        });
     } catch (error) {
-        return next(new AppError(
-            'Internal server error', 
-            500
-        ))
+        console.error('Error creating wallet:', error);
+        return next(new AppError('Internal server error', 500));
     }
-})
-
+});
 
 /**
  * @author Okpe Onoja <okpeonoja18@gmail.com>

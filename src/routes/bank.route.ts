@@ -14,7 +14,7 @@ router.use(protect);
 
 router.get('/allbanks', getUserBanks)
 
-router.post('/sendmoney', addBank)
+router.post('/addbank', addBank)
 
 router.post('/verifyacc',  verifyBank)
 

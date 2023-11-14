@@ -3,38 +3,48 @@ import AppError from '../utils/appError';
 import { Iwallet } from '../types/interfaces/wallet.inter';
 import axios from 'axios';
 
-const monoApiUrl = process.env.MONO_URL || ''
+// const flwApiUrl = process.env.MONO_URL || ''
 
-const monoApiKey = process.env.MONO_API_KEY || ''
+const flutterwaveApiKey = process.env.MONO_API_KEY || 'FLWSECK_TEST-eab56b1d3cdf332da191b8dd2b04f22d-X'
 
 // Helper function to create a wallet for the user
-export const createWalletForUser = async (user: Iuser) => {
+export const createWalletForUser = async (user: Iuser, email: string): Promise<Iwallet> => {
+    try {
+        const flutterwaveApiUrl = 'https://api.flutterwave.com/v3/virtual-account-numbers';
 
-    const response = await axios.post(
-        monoApiUrl,
-        {
-            userId: user._id,
-        },
-        {
-            headers: {
-                'Authorization': `Bearer ${monoApiKey}`,
-                'Content-Type': 'application/json',
+        const response = await axios.post(
+            `${flutterwaveApiUrl}/virtual-account-numbers`,
+            {
+                user_id: user._id,
+                email
+
             },
-        }
-    );
+            {
+                headers: {
+                    'Authorization': `Bearer ${flutterwaveApiKey}`,
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
 
-    return response.data;
+        return response.data;
+    } catch (error) {
+        console.error('Error creating wallet with Flutterwave:', error);
+        throw new AppError('Error creating wallet with Flutterwave', 500);
+    }
 };
 
 // Helper function to create a bank transfer using Mono API
 export const createBankTransfer = async (wallet: Iwallet | null, amount: number, currency: string) => {
+
+    const flwApiUrl = 'https://api.flutterwave.com/v3/virtual-account-numbers';
     if (!wallet) {
         throw new AppError('Wallet not found', 404);
     }
 
 
     const response = await axios.post(
-        monoApiUrl,
+        flwApiUrl,
         {
             amount,
             currency,
@@ -43,7 +53,7 @@ export const createBankTransfer = async (wallet: Iwallet | null, amount: number,
         },
         {
             headers: {
-                'Authorization': `Bearer ${monoApiKey}`,
+                'Authorization': `Bearer ${flutterwaveApiKey}`,
                 'Content-Type': 'application/json',
             },
         }
@@ -56,8 +66,9 @@ export const createBankTransfer = async (wallet: Iwallet | null, amount: number,
 export const fundWalletWithCard = async (cardNumber: string, cardExpiry: string, cardCVV: string, amount: number): Promise<any> => {
 
 
+    const flwApiUrl = 'https://api.flutterwave.com/v3/virtual-account-numbers';
     const response = await axios.post(
-        monoApiUrl,
+        flwApiUrl,
         {
             cardNumber,
             cardExpiry,
@@ -67,7 +78,7 @@ export const fundWalletWithCard = async (cardNumber: string, cardExpiry: string,
         {
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${monoApiKey}`,
+                'Authorization': `Bearer ${flutterwaveApiKey}`,
             },
         }
     );
@@ -78,8 +89,9 @@ export const fundWalletWithCard = async (cardNumber: string, cardExpiry: string,
 // Helper function to withraw funds from wallet
 export const withdrawFunds = async (amount: number, recipientAccountNumber: string, recipientBankCode: string): Promise<any> => {
 
+    const flwApiUrl = 'https://api.flutterwave.com/v3/virtual-account-numbers';
     const response = await axios.post(
-        monoApiUrl,
+        flwApiUrl,
         {
             amount,
             recipientAccountNumber,
@@ -88,7 +100,7 @@ export const withdrawFunds = async (amount: number, recipientAccountNumber: stri
         {
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${monoApiKey}`,
+                'Authorization': `Bearer ${flutterwaveApiKey}`,
             },
         }
     );
@@ -99,8 +111,10 @@ export const withdrawFunds = async (amount: number, recipientAccountNumber: stri
 // Helper function to transfer funds to bank account
 export const transferToBank = async (amount: number, recipientAccountNumber: string, recipientBankCode: string): Promise<any> => {
 
+    const flwApiUrl = 'https://api.flutterwave.com/v3/virtual-account-numbers';
+
     const response = await axios.post(
-        monoApiUrl,
+        flwApiUrl,
         {
             amount,
             recipientAccountNumber,
@@ -109,7 +123,7 @@ export const transferToBank = async (amount: number, recipientAccountNumber: str
         {
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${monoApiKey}`,
+                'Authorization': `Bearer ${flutterwaveApiKey}`,
             },
         }
     );

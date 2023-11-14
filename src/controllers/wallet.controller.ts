@@ -432,17 +432,17 @@ export const transferToBankFromWalletHandler = catchAsync(async (req: Request, r
             ));
         }
 
-        const { amount, recipientAccountNumber, recipientBankCode } = req.body;
+        const { account_bank, account_number, amount, currency, narration } = req.body;
 
         // Basic input validation
-        if (!amount || !recipientAccountNumber || !recipientBankCode) {
+        if (!account_bank || !account_number || !amount || !currency || !narration) {
             return next(new AppError(
-                'Amount, recipient account number, and bank code are required', 
+                'Please fill in the required fields', 
                 400
             ));
         }
 
-        const response = await transferToBank(amount, recipientAccountNumber, recipientBankCode);
+        const response = await transferToBank(account_bank, account_number, amount, currency, narration);
 
 
         const wallet = await Wallet.findOneAndUpdate(

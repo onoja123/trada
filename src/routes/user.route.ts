@@ -6,6 +6,8 @@ import {
     BvnVerification,
     verifyUserBvn,
     generateQr,
+    setupPin,
+    changePin,
     confirmPin
 
 } from '../controllers/user.controller'
@@ -28,7 +30,12 @@ router.post('/verifybvn/:reference', verifyUserBvn)
 
 router.post('/generateqr', generateQr)
 
+router.post('/setuppin', setupPin)
+
+router.post('/changepin', changePin)
+
 router.post('/confirmpin', confirmPin)
+
 
 
 export default router;

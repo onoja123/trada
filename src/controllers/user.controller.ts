@@ -270,7 +270,10 @@ export const setUpAcc = catchAsync(async(req:Request, res:Response, next: NextFu
         console.log(req.body);
 
         if (!req.user) {
-            return next(new AppError('User not authenticated', 401));
+            return next(new AppError(
+              'User not authenticated', 
+              401
+          ));
         }
 
         if (!bvn) {
@@ -302,7 +305,10 @@ export const setUpAcc = catchAsync(async(req:Request, res:Response, next: NextFu
         }
     } catch (error) {
         console.error('Error in BVN verification:', error);
-        return next(new AppError('Internal server error', 500));
+        return next(new AppError(
+          'Internal server error', 
+          500
+      ));
     }
 });
 
@@ -354,7 +360,7 @@ export const verifyUserBvn = async (req: Request, res: Response, next: NextFunct
           return res.status(200).json({
               success: true,
               message: 'BVN verified successfully',
-              data: kyc, // Optionally, you can send the saved KYC data in the response
+              data: kyc,
           });
       } else {
           return res.status(400).json({
@@ -380,9 +386,12 @@ export const verifyUserBvn = async (req: Request, res: Response, next: NextFunct
  */
 export const generateQr = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   try {
-    
+
     if (!req.user) {
-      return next(new AppError('User not authenticated', 401));
+      return next(new AppError(
+        'User not authenticated', 
+        401
+    ));
   }
       // Use req.user._id instead of req.params.id
       const userId = req.user._id;
@@ -453,21 +462,29 @@ export const setupPin = catchAsync(async (req: Request, res: Response, next: Nex
         ));
       }
 
-      const isTrue = await user.matchTransactionPin(pin);
-
-      if (!isTrue) {
+      // Check if the user already has a PIN set up
+      if (user.pin) {
           return next(new AppError(
-            'Invalid Pin', 
-            401
+            'Transaction PIN already set up', 
+            400
         ));
       }
 
-      res.status(200).json({
-          success: true,
-          data: user,
-      });
+        // Hash the new PIN
+        const hashedPin = await bcrypt.hash(pin, 12);
+
+        // Set up and save the new hashed PIN
+        user.pin = hashedPin;
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: "Pin setup successfully",
+            data: user,
+        });
 
   } catch (error) {
+      console.error('Error setting up PIN:', error);
       next(new AppError(
         'Internal server error', 
         500
@@ -491,7 +508,7 @@ export const changePin = catchAsync(async (req: Request, res: Response, next: Ne
         ));
       }
 
-      const { pin } = req.body;
+      const { oldPin, newPin } = req.body;
 
       const user = await User.findOne({ _id: req.user._id });
 
@@ -502,21 +519,28 @@ export const changePin = catchAsync(async (req: Request, res: Response, next: Ne
         ));
       }
 
-      const isTrue = await user.matchTransactionPin(pin);
+      // Verify the old PIN
+      const isOldPinValid = await user.matchTransactionPin(oldPin);
 
-      if (!isTrue) {
+      if (!isOldPinValid) {
           return next(new AppError(
-            'Invalid Pin', 
+            'Invalid Old Pin', 
             401
         ));
       }
 
+      // Hash and set up the new PIN
+      user.pin = newPin;
+      await user.save();
+
       res.status(200).json({
           success: true,
+          message: "Pin changed successfully",
           data: user,
       });
 
   } catch (error) {
+      console.error('Error changing PIN:', error);
       next(new AppError(
         'Internal server error', 
         500

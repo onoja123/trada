@@ -1,10 +1,10 @@
 import axios from 'axios';
 
-const monoApiUrl = process.env.MONO_URL || ''
+const flutterwaveApiUrl = process.env.FLW_URL || ''
 
-const flutterwaveApiKey = process.env.MONO_API_KEY || 'FLWSECK_TEST-eab56b1d3cdf332da191b8dd2b04f22d-X'
+const flutterwaveApiKey = process.env.FLW_API_KEY || 'FLWSECK_TEST-eab56b1d3cdf332da191b8dd2b04f22d-X'
 
-// Helper function to verify bvn using Mono API
+// Helper function to verify bvn using lutterwave API
 export const initateBvn = async (bvn: string, firstname: string, lastname:string): Promise<boolean> => {
     try {
         const bvnVerificationUrl = 'https://api.flutterwave.com/v3/bvn/verifications';

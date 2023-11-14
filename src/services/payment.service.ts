@@ -3,9 +3,9 @@ import AppError from '../utils/appError';
 import { Iwallet } from '../types/interfaces/wallet.inter';
 import axios from 'axios';
 
-// const flwApiUrl = process.env.MONO_URL || ''
+const flwApiUrl = process.env.FLW_URL || ''
 
-const flutterwaveApiKey = process.env.MONO_API_KEY || 'FLWSECK_TEST-eab56b1d3cdf332da191b8dd2b04f22d-X'
+const flutterwaveApiKey = process.env.FLW_API_KEY || 'FLWSECK_TEST-eab56b1d3cdf332da191b8dd2b04f22d-X'
 
 // Helper function to create a wallet for the user
 export const createWalletForUser = async (user: Iuser, email: string): Promise<Iwallet> => {
@@ -34,7 +34,7 @@ export const createWalletForUser = async (user: Iuser, email: string): Promise<I
     }
 };
 
-// Helper function to create a bank transfer using Mono API
+// Helper function to create a bank transfer using fluttwewave API
 export const createBankTransfer = async (wallet: Iwallet | null, amount: number, currency: string) => {
 
     const flwApiUrl = 'https://api.flutterwave.com/v3/virtual-account-numbers';
@@ -109,17 +109,21 @@ export const withdrawFunds = async (amount: number, recipientAccountNumber: stri
 };
 
 // Helper function to transfer funds to bank account
-export const transferToBank = async (amount: number, recipientAccountNumber: string, recipientBankCode: string): Promise<any> => {
+export const transferToBank = async (account_bank: string, account_number: string, amount: string, currency: string, narration: string): Promise<any> => {
 
-    const flwApiUrl = 'https://api.flutterwave.com/v3/virtual-account-numbers';
+    const flwApiUrl = 'https://api.flutterwave.com/v3/transfers';
+
+    const bankDetails = {
+        account_bank,
+        account_number,
+        amount,
+        currency,
+        narration
+    };
 
     const response = await axios.post(
         flwApiUrl,
-        {
-            amount,
-            recipientAccountNumber,
-            recipientBankCode,
-        },
+        bankDetails,
         {
             headers: {
                 'Content-Type': 'application/json',

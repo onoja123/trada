@@ -23,6 +23,9 @@ const userSchema = new Schema<Iuser>({
 		type: String,
 		select: false,
 	},
+	pin: {
+		type: String,
+	},
 	dateOfBirth: {
 		type: Date
 	},

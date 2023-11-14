@@ -64,6 +64,31 @@ export const getUserBanks = catchAsync(async(req:Request, res:Response, next: Ne
 
 /**
  * @author Okpe Onoja <okpeonoja18@gmail.com>
+ * @description Verify user bank account
+ * @route `/api/bank/verifyacc`
+ * @access PRIVATE
+ * @type POST
+ */
+export const verifyBank = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        // Extract bank details from the request body
+        const { account_number, account_bank } = req.body;
+
+        const verificationResult = await verifyBankAccount(account_number, account_bank);
+
+        // Handle the response accordingly
+        res.status(200).json({
+            success: true,
+            data: verificationResult,
+        });
+    } catch (error) {
+        console.error('Error verifying bank account:', error);
+        return next(new AppError('Internal server error', 500));
+    }
+});
+
+/**
+ * @author Okpe Onoja <okpeonoja18@gmail.com>
  * @description Add bank details
  * @route `/api/bank/addbank`
  * @access PRIVATE
@@ -115,33 +140,5 @@ export const addBank = catchAsync(async (req: Request, res: Response, next: Next
             'Internal server error', 
             500
         ));
-    }
-});
-
-
-/**
- * @author Okpe Onoja <okpeonoja18@gmail.com>
- * @description Verify user bank account
- * @route `/api/bank/verifyacc`
- * @access PRIVATE
- * @type POST
- */
-export const verifyBank = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        // Extract bank details from the request body
-        const { account_number, account_bank } = req.body;
-        console.log(req.body)
-
-        const verificationResult = await verifyBankAccount(account_number, account_bank);
-        console.log(verificationResult)
-
-        // Handle the response accordingly
-        res.status(200).json({
-            success: true,
-            data: verificationResult,
-        });
-    } catch (error) {
-        console.error('Error verifying bank account:', error);
-        return next(new AppError('Internal server error', 500));
     }
 });

@@ -1,42 +1,32 @@
 import axios from 'axios';
 
-const monoApiUrl = process.env.MONO_URL || ''
+const flutterwaveApiUrl = process.env.FLW_URL || ''
 
-const flutterwaveApiKey = process.env.MONO_API_KEY || 'FLWSECK_TEST-eab56b1d3cdf332da191b8dd2b04f22d-X'
+const flutterwaveApiKey = process.env.FLW_API_KEY || 'FLWSECK_TEST-eab56b1d3cdf332da191b8dd2b04f22d-X'
 
-// Helper function to verify bvn using Mono API
-export const initateBvn = async (bvn: string, firstname: string, lastname:string): Promise<boolean> => {
+// Helper function to get all bils category using flutterwave API
+export const getallBill = async (): Promise<any> => {
     try {
-        const bvnVerificationUrl = 'https://api.flutterwave.com/v3/bvn/verifications';
+        const flutterwaveApiUrl = 'https://api.flutterwave.com/v3/bill-categories';
 
-        const bankDetails = {
-            bvn,
-            firstname,
-            lastname,
-        };
-
-        const response = await axios.post(
-            bvnVerificationUrl,
-            bankDetails,
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${flutterwaveApiKey}`,
-                },
-            }
-        );
+        const response = await axios.get(flutterwaveApiUrl, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${flutterwaveApiKey}`,
+            },
+        });
 
         return response.data;
     } catch (error) {
-        console.error('Error verifying BVN with Flutterwave:', error);
-        throw new Error('Error verifying BVN with Flutterwave');
+        console.error('Error getting bill categories from Flutterwave:', error);
+        throw new Error('Error getting bill categories from Flutterwave');
     }
 };
 
 // Helper function to verify bvn otp using flutterwave API
-export const verifyBvn = async (reference: string): Promise<boolean> => {
+export const verifyBill = async (item_code: string): Promise<boolean> => {
     try {
-        const otpVerificationUrl = `https://api.flutterwave.com/v3/bvn/verifications/${reference}`;
+        const otpVerificationUrl = `https://api.flutterwave.com/v3/bill-items/${item_code}/validate`;
 
         const response = await axios.get(otpVerificationUrl, {
             headers: {

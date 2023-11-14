@@ -1,11 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
 import AppError from '../utils/appError';
 import catchAsync from '../utils/catchAsync';
-import bcrypt from "bcrypt";
-import User from '../models/user.model';
-import Kyc from '../models/kyc.model'
-import Wallet from '../models/wallet.model';
-import { Iuser } from "../types/interfaces/user.inter";
+import {
+    getallBill
+}from '../services/bills.service'
 
 
 /**
@@ -15,16 +13,24 @@ import { Iuser } from "../types/interfaces/user.inter";
  * @access PRIVATE
  * @type POST
  */
-export const payCableBills = catchAsync(async(req:Request, res:Response, next: NextFunction)=>{
+export const getAllCategories = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     try {
-        
+        // You can access query parameters using req.query
+        const { filterParameter } = req.query;
+
+        // Call the service function to get all bill categories with optional filter
+        const categories = await getallBill();
+
+        // Respond with the retrieved categories
+        res.status(200).json({
+            success: true,
+            data: categories,
+        });
     } catch (error) {
-        return next(new AppError(
-            'Internal server error', 
-            500
-        ))  
+        console.error('Error getting bill categories:', error);
+        return next(new AppError('Internal server error', 500));
     }
-})
+});
 
 
 /**
@@ -34,7 +40,7 @@ export const payCableBills = catchAsync(async(req:Request, res:Response, next: N
  * @access PRIVATE
  * @type POST
  */
-export const purchaseAirtime = catchAsync(async(req:Request, res:Response, next: NextFunction)=>{
+export const validateBill = catchAsync(async(req:Request, res:Response, next: NextFunction)=>{
     try {
         
     } catch (error) {

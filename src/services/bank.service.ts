@@ -5,12 +5,11 @@ import axios from 'axios';
 
 const monoApiUrl = process.env.MONO_URL || ''
 
-const monoApiKey = process.env.MONO_API_KEY || ''
+const monoApiKey = process.env.MONO_API_KEY || 'FLWSECK_TEST-eab56b1d3cdf332da191b8dd2b04f22d-X'
 
-export const getUserBanksFromMono = async (userId: string): Promise<any> => {
+export const getUserBanksFromFlw = async (userId: string): Promise<any> => {
     try {
-        const monoApiUrl = `https://api.withmono.com/v1/accounts/${userId}/banks`;
-        const monoApiKey = 'your-mono-api-key'; // Replace with your actual Mono API key
+        const monoApiUrl = `https://api.flutterwave.com/v3/banks/NG`;
 
         const response = await axios.get(monoApiUrl, {
             headers: {
@@ -33,7 +32,7 @@ export const addBankToWallet = async (walletId: string, bankDetails: any): Promi
 
         const response = await axios.post(apiUrl, bankDetails, {
             headers: {
-                'Authorization': `Bearer ${apiKey}`,
+                'Authorization': `Bearer ${monoApiKey}`,
                 'Content-Type': 'application/json',
             },
         });
@@ -44,21 +43,24 @@ export const addBankToWallet = async (walletId: string, bankDetails: any): Promi
     }
 };
 
-export const verifyBankAccount = async (bankDetails: any): Promise<any> => {
+export const verifyBankAccount = async (account_number: string, account_bank: string): Promise<any> => {
     try {
-        // Replace the following URL with the actual endpoint for verifying a bank account
-        const apiUrl = 'https://api.example.com/verify-bank';
-        const apiKey = 'your-api-key'; // Replace with your actual API key
+        const apiUrl = 'https://api.flutterwave.com/v3/accounts/resolve';
 
+        const bankDetails = {
+            account_number: account_number,
+            account_bank: account_bank,
+        };
         const response = await axios.post(apiUrl, bankDetails, {
             headers: {
-                'Authorization': `Bearer ${apiKey}`,
+                'Authorization': `Bearer ${monoApiKey}`,
                 'Content-Type': 'application/json',
             },
         });
 
         return response.data;
     } catch (error) {
+        console.error('Error verifying bank account', error);
         throw new Error('Error verifying bank account');
     }
 };

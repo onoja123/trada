@@ -4,6 +4,7 @@ import {
     setResiAdd,
     setUpAcc,
     BvnVerification,
+    verifyUserBvn,
     generateQr,
     confirmPin
 
@@ -22,6 +23,8 @@ router.put('/setaddress/:id', setResiAdd)
 router.put('/setaccount/:id', setUpAcc)
 
 router.post('/setupBvn', BvnVerification)
+
+router.post('/verifybvn/:reference', verifyUserBvn)
 
 router.post('/generateqr', generateQr)
 

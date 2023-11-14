@@ -8,7 +8,7 @@ import Kyc from '../models/kyc.model'
 import Wallet from '../models/wallet.model';
 import { Iwallet } from '../types/interfaces/wallet.inter';
 import {
-    getUserBanksFromMono,
+    getUserBanksFromFlw,
     addBankToWallet,
     verifyBankAccount
 }from '../services/bank.service'
@@ -17,7 +17,7 @@ import {
 /**
  * @author Okpe Onoja <okpeonoja18@gmail.com>
  * @description Transfer money from wallet to bank account
- * @route `/api/wallet/trasnfertobank`
+ * @route `/api/bank/allbanks`
  * @access PRIVATE
  * @type POST
  */
@@ -43,14 +43,16 @@ export const getUserBanks = catchAsync(async(req:Request, res:Response, next: Ne
         }
         // Assuming you have a user ID stored in req.user._id
         const userId = req.user._id;
-        // Call the helper function to get user banks from Mono
-        const userBanks = await getUserBanksFromMono(userId);
+
+        // Call the helper function to get user banks from flw
+        const userBanks = await getUserBanksFromFlw(userId);
 
         // Handle the response accordingly
         res.status(200).json({
             success: true,
             data: userBanks,
         });
+        
     } catch (error) {
         console.error('Error getting user banks from Mono:', error);
         return next(new AppError(
@@ -62,8 +64,8 @@ export const getUserBanks = catchAsync(async(req:Request, res:Response, next: Ne
 
 /**
  * @author Okpe Onoja <okpeonoja18@gmail.com>
- * @description Transfer money from wallet to bank account
- * @route `/api/wallet/trasnfertobank`
+ * @description Add bank details
+ * @route `/api/bank/addbank`
  * @access PRIVATE
  * @type POST
  */
@@ -116,41 +118,22 @@ export const addBank = catchAsync(async (req: Request, res: Response, next: Next
     }
 });
 
-/**
- * @author Okpe Onoja <okpeonoja18@gmail.com>
- * @description Transfer money from wallet to bank account
- * @route `/api/wallet/trasnfertobank`
- * @access PRIVATE
- * @type POST
- */
-export const getBanks = catchAsync(async(req:Request, res:Response, next: NextFunction)=>{
-    try {
-        
-    } catch (error) {
-        return next(new AppError(
-            'Internal server error', 
-            500
-        ))  
-    }
-})
 
 /**
  * @author Okpe Onoja <okpeonoja18@gmail.com>
- * @description Transfer money from wallet to bank account
- * @route `/api/wallet/trasnfertobank`
+ * @description Verify user bank account
+ * @route `/api/bank/verifyacc`
  * @access PRIVATE
  * @type POST
  */
 export const verifyBank = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     try {
         // Extract bank details from the request body
-        const { bankName, accountNumber, accountHolderName } = req.body;
+        const { account_number, account_bank } = req.body;
+        console.log(req.body)
 
-        const verificationResult = await verifyBankAccount({
-            bankName,
-            accountNumber,
-            accountHolderName,
-        });
+        const verificationResult = await verifyBankAccount(account_number, account_bank);
+        console.log(verificationResult)
 
         // Handle the response accordingly
         res.status(200).json({
@@ -159,9 +142,6 @@ export const verifyBank = catchAsync(async (req: Request, res: Response, next: N
         });
     } catch (error) {
         console.error('Error verifying bank account:', error);
-        return next(new AppError(
-            'Internal server error', 
-            500
-        ));
+        return next(new AppError('Internal server error', 500));
     }
 });

@@ -7,6 +7,12 @@ const kycSchema = new Schema<Ikyc>({
         ref: 'user',
         required: true
       },
+      firstname:{
+        type: String,
+      },
+      lastname:{
+        type: String,
+      },
       govId: {
         type: String,
       },

@@ -5,5 +5,7 @@ export interface Ikyc extends Document{
     govId: string;
     proofOfId: string;
     bvn: string;
+    firstname: string;
+    lastname : string;
     createdAt: Date;
 }

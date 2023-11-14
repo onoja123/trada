@@ -4,9 +4,9 @@ import {
     sendMoneyToUser,
     fundWalletBanktransfer,
     fundWalletCard,
-    withdrawFunds,
+    withdrawFundsHandler,
     requestFunds,
-    transferToBank,
+    transferToBankFromWalletHandler,
 } from '../controllers/wallet.controller'
 
 import { protect } from '../controllers/auth.controller';
@@ -24,10 +24,10 @@ router.put('/fundwalbank', fundWalletBanktransfer)
 
 router.post('/fundwalcard', fundWalletCard)
 
-router.post('/withdraw', withdrawFunds)
+router.post('/withdraw', withdrawFundsHandler)
 
 router.post('/request', requestFunds)
 
-router.post('/trasnfertobank', transferToBank)
+router.post('/trasnfertobank', transferToBankFromWalletHandler)
 
 export default router;

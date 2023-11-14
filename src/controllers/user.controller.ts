@@ -8,6 +8,7 @@ import qrcode from 'qrcode';
 import generateTagNumber from '../utils/tagGen';
 import { Iuser } from "../types/interfaces/user.inter";
 import {
+  initateBvn,
   verifyBvn
 }from '../services/kyc.service'
 
@@ -197,17 +198,23 @@ export const setUpAcc = catchAsync(async(req:Request, res:Response, next: NextFu
       const existingUsername = await User.findOne({ username });
 
       if (existingUsername && existingUsername._id.toString() !== id) {
-          return next(new AppError('Username is already taken', 400));
+          return next(new AppError(
+            'Username is already taken', 
+            400
+        ));
       }
 
       // Check if the email is already taken
       const existingEmail = await User.findOne({ email });
 
       if (existingEmail && existingEmail._id.toString() !== id) {
-          return next(new AppError('Email is already taken', 400));
+          return next(new AppError(
+            'Email is already taken', 
+            400
+        ));
       }
         // Generate tagNumber
-        const tagNumber = await generateTagNumber();
+      const tagNumber = await generateTagNumber();
                 
       // Hash the password
       const hashedPassword = await bcrypt.hash(password, 12);
@@ -252,14 +259,15 @@ export const setUpAcc = catchAsync(async(req:Request, res:Response, next: NextFu
 
   /**
  * @author Okpe Onoja <okpeonoja18@gmail.com>
- * @description verify bvn
- * @route `/api/wallet/bvn`
+ * @description initial bvn verification
+ * @route `/api/user/setupBvn`
  * @access PRIVATE
  * @type POST
  */
   export const BvnVerification = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { bvn } = req.body;
+        const { bvn, firstname, lastname } = req.body;
+        console.log(req.body);
 
         if (!req.user) {
             return next(new AppError('User not authenticated', 401));
@@ -276,18 +284,14 @@ export const setUpAcc = catchAsync(async(req:Request, res:Response, next: NextFu
             return next(new AppError('User not found', 404));
         }
 
-        const isBvnValid = await verifyBvn(bvn);
+        const isBvnValid = await initateBvn(bvn, firstname, lastname);
+        console.log(isBvnValid);
 
-        // Save BVN information in the KYC model
-        const kyc = await Kyc.create({
-            _user: user,
-            bvn: isBvnValid,
-            status: isBvnValid ? 'success' : 'failed',
-        });
 
         if (isBvnValid) {
             res.status(200).json({
                 success: true,
+                isBvnValid,
                 message: 'BVN verified successfully',
             });
         } else {
@@ -297,12 +301,75 @@ export const setUpAcc = catchAsync(async(req:Request, res:Response, next: NextFu
             });
         }
     } catch (error) {
-      return next(new AppError(
-        'Internal server error', 
-        500
-    ));
+        console.error('Error in BVN verification:', error);
+        return next(new AppError('Internal server error', 500));
     }
 });
+
+  /**
+ * @author Okpe Onoja <okpeonoja18@gmail.com>
+ * @description verify bvn
+ * @route `/api/user/verifybvn/:reference`
+ * @access PRIVATE
+ * @type POST
+ */
+export const verifyUserBvn = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+
+      const {reference } = req.params;
+
+      if (!reference) {
+          return res.status(400).json({
+              success: false,
+              message: 'Reference is required',
+          });
+      }
+
+      const isBvnValid = await verifyBvn(reference);
+
+      if (isBvnValid) {
+          const { bvn, firstname, lastname } = req.body;
+
+          // Find the user by their _id
+          const user = await User.findOne({ /* Add your search criteria here */ });
+
+          if (!user) {
+              return res.status(404).json({
+                  success: false,
+                  message: 'User not found',
+              });
+          }
+
+          // Save BVN information in the KYC model
+          const kyc = await Kyc.create({
+              _user: user,
+              bvn,
+              firstname,
+              lastname,
+              status: true,
+          });
+
+          user.isKycVerified = true
+          // Respond with success message
+          return res.status(200).json({
+              success: true,
+              message: 'BVN verified successfully',
+              data: kyc, // Optionally, you can send the saved KYC data in the response
+          });
+      } else {
+          return res.status(400).json({
+              success: false,
+              message: 'BVN verification failed',
+          });
+      }
+  } catch (error) {
+      console.error('Error in BVN verification:', error);
+      return res.status(500).json({
+          success: false,
+          message: 'Internal server error',
+      });
+  }
+};
 
 /**
  * @author Okpe Onoja <okpeonoja18@gmail.com>
@@ -311,39 +378,151 @@ export const setUpAcc = catchAsync(async(req:Request, res:Response, next: NextFu
  * @access PRIVATE
  * @type POST
  */
-export const generateQr = catchAsync(async(req:Request, res:Response, next: NextFunction) => {
-    try {
-        const id = req.params.id;
+export const generateQr = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    
+    if (!req.user) {
+      return next(new AppError('User not authenticated', 401));
+  }
+      // Use req.user._id instead of req.params.id
+      const userId = req.user._id;
 
-        // Find user by ID or name
-        const user = await User.findOne({ $or: [{ _id: id }, { name: id }] });
-    
-        if(!user){
-            return next(new AppError(
-                "User not found",
-                404
-            ))
-        }
-    
-      // Generate QR code with user ID or name as data
+      // Check if user ID is available
+      if (!userId) {
+          return next(new AppError(
+              'User ID is required',
+              400
+          ));
+      }
+
+      // Find user by ID
+      const user = await User.findById(userId);
+
+      // Check if user exists
+      if (!user) {
+          return next(new AppError(
+              'User not found',
+              404
+          ));
+      }
+
+      // Generate QR code with user ID and firstname as data
       const qrData = `localhost:3000/${user._id}/${user.firstname}`;
       const qrCode = await qrcode.toDataURL(qrData);
 
       res.status(200).json({
-        sucesss: true,
-        message: "Qr Generated successfully",
-        data: qrCode
-      })
-    
-    } catch (error) {
+          success: true,
+          message: 'QR Code generated successfully',
+          data: qrCode,
+      });
+
+  } catch (error) {
+      console.error('Error generating QR code:', error);
       return next(new AppError(
+          'Internal server error',
+          500
+      ));
+  }
+});
+
+
+/**
+ * @author Okpe Onoja <okpeonoja18@gmail.com>
+ * @description Setup user pin
+ * @route `/api/user/setpin`
+ * @access PRIVATE
+ * @type POST
+ */
+export const setupPin = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  try {
+      if (!req.user) {
+          return next(new AppError(
+            'User not authenticated', 
+            401
+        ));
+      }
+
+      const { pin } = req.body;
+
+      const user = await User.findOne({ _id: req.user._id });
+
+      if (!user) {
+          return next(new AppError(
+            'User not found', 
+            404
+        ));
+      }
+
+      const isTrue = await user.matchTransactionPin(pin);
+
+      if (!isTrue) {
+          return next(new AppError(
+            'Invalid Pin', 
+            401
+        ));
+      }
+
+      res.status(200).json({
+          success: true,
+          data: user,
+      });
+
+  } catch (error) {
+      next(new AppError(
         'Internal server error', 
         500
-      )); 
-    
-    }
-})
+    ));
+  }
+});
 
+/**
+ * @author Okpe Onoja <okpeonoja18@gmail.com>
+ * @description change user pin
+ * @route `/api/user/confirmpin`
+ * @access PRIVATE
+ * @type POST
+ */
+export const changePin = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  try {
+      if (!req.user) {
+          return next(new AppError(
+            'User not authenticated', 
+            401
+        ));
+      }
+
+      const { pin } = req.body;
+
+      const user = await User.findOne({ _id: req.user._id });
+
+      if (!user) {
+          return next(new AppError(
+            'User not found', 
+            404
+        ));
+      }
+
+      const isTrue = await user.matchTransactionPin(pin);
+
+      if (!isTrue) {
+          return next(new AppError(
+            'Invalid Pin', 
+            401
+        ));
+      }
+
+      res.status(200).json({
+          success: true,
+          data: user,
+      });
+
+  } catch (error) {
+      next(new AppError(
+        'Internal server error', 
+        500
+    ));
+  }
+});
 
 /**
  * @author Okpe Onoja <okpeonoja18@gmail.com>

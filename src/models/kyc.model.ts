@@ -1,33 +1,38 @@
 import mongoose, { Document, Schema } from "mongoose";
 import { Ikyc } from "../types/interfaces/kyc.inter";
 
-const kycSchema = new Schema<Ikyc>({
-    _user: {
-        type: mongoose.SchemaTypes.ObjectId,
-        ref: 'user',
-        required: true
+const kycSchema = new Schema<Ikyc>(
+  {
+      _user: {
+          type: mongoose.SchemaTypes.ObjectId,
+          ref: 'user',
+          required: true,
       },
-      firstname:{
-        type: String,
+      firstname: {
+          type: String,
       },
-      lastname:{
-        type: String,
+      lastname: {
+          type: String,
       },
       govId: {
-        type: String,
+          type: String,
       },
       proofOfId: {
-        type: String,
+          type: String,
       },
       bvn: {
-        type: String,
+          type: String,
       },
       createdAt: {
-        type: Date,
-        default: Date.now()
+          type: Date,
+          default: Date.now,
       },
-    },  
+  },
+  {
+      timestamps: true,
+  }
 );
+
 
 const Kyc = mongoose.model<Ikyc>('Kyc', kycSchema)
 

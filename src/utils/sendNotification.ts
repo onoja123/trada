@@ -7,7 +7,7 @@ import admin from 'firebase-admin'
  * @param {String} image This is the image title for the fcm , If not specefic uses a default image `OPTIONAL`
  * @returns Suceess Message (`Use in an Async Function`)
  */
-export const sendNotification = async(deviceToken: string, title: string, message: string, image: string): Promise<string> => {
+export const sendSingleNotification = async(deviceToken: string, title: string, message: string, image: string): Promise<string> => {
     const payload = {
         notification: {
             title: title,

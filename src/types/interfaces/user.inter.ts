@@ -1,6 +1,6 @@
 import { Document, Schema } from "mongoose";
 
-export interface Iuser extends Document{
+export interface Iuser extends Document {
     firstname: string;
     lastname: string;
     email: string;
@@ -18,16 +18,16 @@ export interface Iuser extends Document{
     city: string;
     postalCode: number;
     image?: string | '';
-    tagNumber: string; 
+    tagNumber: string;
     dateJoined: Date;
     isActive: boolean;
     isKycVerified: boolean;
     profileSet: boolean;
     isAdmin: boolean;
-    wallet: Schema.Types.ObjectId,
+    wallet: Schema.Types.ObjectId[];
     verificationToken: string;
     verificationTokenExpires: Date;
-    otp: string | null; 
+    otp: string | null;
     resetPasswordToken: number;
     resetPasswordExpire: Date;
     verifyEmailToken: string;
@@ -35,5 +35,6 @@ export interface Iuser extends Document{
     generateAuthToken(): string;
     changedPasswordAfter(JWTTimestamp: any): boolean;
     matchTransactionPin(enteredPin: any): string;
+    transactions: Schema.Types.ObjectId[]; 
     createdAt: Date;
 }

@@ -37,29 +37,29 @@ export const createWalletForUser = async (user: Iuser, email: string): Promise<I
 // Helper function to create a bank transfer using fluttwewave API
 export const createBankTransfer = async (wallet: Iwallet | null, amount: number, currency: string) => {
 
-    const flwApiUrl = 'https://api.flutterwave.com/v3/virtual-account-numbers';
-    if (!wallet) {
-        throw new AppError('Wallet not found', 404);
-    }
+    // const flwApiUrl = 'https://api.flutterwave.com/v3/virtual-account-numbers';
+    // if (!wallet) {
+    //     throw new AppError('Wallet not found', 404);
+    // }
 
 
-    const response = await axios.post(
-        flwApiUrl,
-        {
-            amount,
-            currency,
-            recipientAccountNumber: wallet.accountNumber,
-            recipientBankCode: wallet.bankCode,
-        },
-        {
-            headers: {
-                'Authorization': `Bearer ${flutterwaveApiKey}`,
-                'Content-Type': 'application/json',
-            },
-        }
-    );
+    // const response = await axios.post(
+    //     flwApiUrl,
+    //     {
+    //         amount,
+    //         currency,
+    //         recipientAccountNumber: wallet.accountNumber,
+    //         recipientBankCode: wallet.bankCode,
+    //     },
+    //     {
+    //         headers: {
+    //             'Authorization': `Bearer ${flutterwaveApiKey}`,
+    //             'Content-Type': 'application/json',
+    //         },
+    //     }
+    // );
 
-    return response.data;
+    // return response.data;
 };
 
 // Helper function to fund wallet with card

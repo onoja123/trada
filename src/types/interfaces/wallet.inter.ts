@@ -1,15 +1,8 @@
-import { Document, Schema } from "mongoose";
+import { Document, Schema } from 'mongoose';
 
-export interface Iwallet extends Document{
+export interface Iwallet extends Document {
     _user: Schema.Types.ObjectId;
-    _transaction: Schema.Types.ObjectId;
-    balance: Number;
-    amount: Number;
-    accountNumber: string;
-    bankCode: string;
-
-    locked: Boolean;
-    inflow: Number;
-    outflow: Number;
+    _transactions: Schema.Types.ObjectId[];
+    balance: number;
     createdAt: Date;
 }

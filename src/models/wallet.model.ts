@@ -1,42 +1,29 @@
-import mongoose, { Document, Schema } from "mongoose";
-import { Iwallet } from "../types/interfaces/wallet.inter";
+import mongoose, { Document, Schema } from 'mongoose';
+import { Iwallet } from '../types/interfaces/wallet.inter';
 
-const walletSchema = new Schema<Iwallet>({
-    _user: {
-        type: mongoose.SchemaTypes.ObjectId,
-        ref: 'user',
-        required: true
-      },
-      _transaction: {
-        type: mongoose.SchemaTypes.ObjectId,
-        ref: 'user',
-        required: true
-      },
-      balance: {
-        type: Number,
-        defaul: 0
-    },
-      amount: {
-          type: Number,
-          default: 0
+const walletSchema = new Schema<Iwallet>(
+    {
+        _user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User', // Assuming the reference model is 'User'
+            required: true,
         },
-        accountNumber: {
-        type: String,
-      },
-      bankCode:{
-        type: String,
-      },
-      locked: {
-        type: Boolean,
-        default: false
-      },
-      createdAt: {
-        type: Date,
-        default: Date.now()
-      },
-    },  
+        _transactions: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Transaction', // Assuming the reference model is 'Transaction'
+        }],
+        balance: {
+            type: Number,
+            default: 0,
+        },
+        createdAt: {
+            type: Date,
+            default: Date.now,
+        },
+    },
+    { timestamps: true }
 );
 
-const Wallet = mongoose.model<Iwallet>('Wallet', walletSchema)
+const Wallet = mongoose.model<Iwallet>('Wallet', walletSchema);
 
 export default Wallet;

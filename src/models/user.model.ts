@@ -100,6 +100,13 @@ const userSchema = new Schema<Iuser>({
 		type: String,
 		select: false,
 	},
+	transactions: [
+		{
+			type: mongoose.Schema.Types.ObjectId,
+			ref: 'Transaction',
+			required: true,
+		}
+	],
 });
 
 userSchema.pre('save', async function (next) {

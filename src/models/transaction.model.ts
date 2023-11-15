@@ -1,30 +1,38 @@
 import mongoose, { Document, Schema } from "mongoose";
-import { Itransaction } from "../types/interfaces/transaction";
+import { Itransaction } from "../types/interfaces/transaction.inter";
 
 const transactionSchema = new Schema<Itransaction>({
-	date: {
-		type: Date,
-		default: Date.now,
-		required: true,
-	},
-	amount: {
-		type: Number,
-		required: true,
-	},
-	bank: {
-		type: String,
-	},
+    sender: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+    },
+    recipient: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+    },
+    amount: {
+        type: Number,
+        required: true,
+    },
+    type: {
+        type: String,
+        required: true,
+    },
+    paymentMethod: {
+        type: String,
+        required: true,
+    },
     reference: {
-		type: String,
-	},
-    detail: {
-		type: String,
-	},
-	from: {
-		type: String,
-	},
+        type: String,
+    },
+    date: {
+        type: Date,
+        default: Date.now,
+    },
 });
 
-const Transaction = mongoose.model('Transaction', transactionSchema);
+const Transaction = mongoose.model<Itransaction> ('Transaction', transactionSchema);
 
-module.exports = Transaction;
+export default Transaction;

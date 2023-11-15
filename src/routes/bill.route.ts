@@ -10,7 +10,7 @@ const router = express.Router();
 // Protect all routes after this middleware
 router.use(protect);
 
-router.post('/allcategories', getAllCategories)
+router.get('/allcategories', getAllCategories)
 
 // router.post('/sendmoney', sendMoneyToUser)
 

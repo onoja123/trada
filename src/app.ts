@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import authRoute from '../src/routes/auth.route';
 import userRoute from '../src/routes/user.route';
 import walletRoute from '../src/routes/wallet.route'
+import billRoute from '../src/routes/bill.route'
 import bankRoute from '../src/routes/bank.route';
 import globalErrorHandler from './controllers/error.controller';
 
@@ -28,6 +29,8 @@ app.use('/api/v1/auth', authRoute);
 app.use('/api/v1/bank', bankRoute);
 
 app.use('/api/v1/user', userRoute);
+
+app.use('/api/v1/bill', billRoute);
 
 app.use('/api/v1/wallet', walletRoute);
 

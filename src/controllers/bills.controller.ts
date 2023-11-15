@@ -34,9 +34,6 @@ export const getAllCategories = catchAsync(async (req: Request, res: Response, n
 });
 
 
-
-
-
 /**
  * @author Okpe Onoja <okpeonoja18@gmail.com>
  * @description Purchase airtime

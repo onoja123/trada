@@ -1,6 +1,7 @@
 import express from 'express';
 import { 
-    getAllCategories
+    getAllCategories,
+    validateBill
 } from '../controllers/bills.controller'
 
 import { protect } from '../controllers/auth.controller';
@@ -12,7 +13,7 @@ router.use(protect);
 
 router.get('/allcategories', getAllCategories)
 
-// router.post('/sendmoney', sendMoneyToUser)
+router.post('/validatebill/:item_code', validateBill)
 
 // router.put('/fundwalbank', fundWalletBanktransfer)
 

@@ -23,6 +23,8 @@ import Transaction from '../models/transaction.model';
  */
 export const createWallet = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     try {
+
+        const { bvn } = req.body;
         if (!req.user) {
             return next(new AppError('User not authenticated', 401));
         }
@@ -34,22 +36,12 @@ export const createWallet = catchAsync(async (req: Request, res: Response, next:
             return next(new AppError('User not found', 404));
         }
 
-        // Get email from the request, assuming it is available in the request body
-        const email = req.body.email;
-
-        // Make a POST request to the Flutterwave API to create a wallet for the user
-        const response = await createWalletForUser(user, email);
-
-        // If the request is successful, save the wallet to the database
-        // const walletData = response.data.data;
-        // const savedWallet = await Wallet.create({
-        //     _user: req.user._id,
-        //     ...walletData,
-        // });
+        // Use the createWalletForUser function to create a wallet for the user
+        const wallet = await createWalletForUser(user ,bvn, user.email);
 
         res.status(200).json({
             success: true,
-            data: response,
+            data: wallet,
         });
     } catch (error) {
         console.error('Error creating wallet:', error);

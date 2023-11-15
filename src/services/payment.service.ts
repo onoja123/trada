@@ -8,7 +8,7 @@ const flwApiUrl = process.env.FLW_URL || ''
 const flutterwaveApiKey = process.env.FLW_API_KEY || 'FLWSECK_TEST-eab56b1d3cdf332da191b8dd2b04f22d-X'
 
 // Helper function to create a wallet for the user
-export const createWalletForUser = async (user: Iuser, email: string): Promise<Iwallet> => {
+export const createWalletForUser = async (user: Iuser, email: string, bvn: string,): Promise<Iwallet> => {
     try {
         const flutterwaveApiUrl = 'https://api.flutterwave.com/v3/virtual-account-numbers';
 
@@ -16,7 +16,9 @@ export const createWalletForUser = async (user: Iuser, email: string): Promise<I
             `${flutterwaveApiUrl}/virtual-account-numbers`,
             {
                 user_id: user._id,
-                email
+                bvn,
+                email,
+                "is_permanent": true,
 
             },
             {
@@ -32,6 +34,7 @@ export const createWalletForUser = async (user: Iuser, email: string): Promise<I
         console.error('Error creating wallet with Flutterwave:', error);
         throw new AppError('Error creating wallet with Flutterwave', 500);
     }
+
 };
 
 // Helper function to fund wallet with card

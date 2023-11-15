@@ -6,6 +6,7 @@ import userRoute from '../src/routes/user.route';
 import walletRoute from '../src/routes/wallet.route'
 import billRoute from '../src/routes/bill.route'
 import bankRoute from '../src/routes/bank.route';
+import TransactionRoute from '../src/routes/trasnaction.route';
 import globalErrorHandler from './controllers/error.controller';
 
 dotenv.config();
@@ -26,13 +27,16 @@ app.use(cors({
 
 app.use('/api/v1/auth', authRoute);
 
-app.use('/api/v1/bank', bankRoute);
-
 app.use('/api/v1/user', userRoute);
+
+app.use('/api/v1/wallet', walletRoute);
 
 app.use('/api/v1/bill', billRoute);
 
-app.use('/api/v1/wallet', walletRoute);
+app.use('/api/v1/bank', bankRoute);
+
+app.use('/api/v1/transaction', TransactionRoute);
+
 
 
 

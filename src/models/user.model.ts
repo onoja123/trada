@@ -14,7 +14,6 @@ const userSchema = new Schema<Iuser>({
 		type: String,
 		unique: true,
 		lowercase: true,
-		select: false,
 	},
     phone:{
 		type: String,
@@ -54,6 +53,22 @@ const userSchema = new Schema<Iuser>({
 	tagNumber:{
 		type: String,
 	},
+	bvn:{
+		type: String,
+	},
+	isIdentityVerified: {
+		type: Boolean,
+		default: false,
+	  },
+	  identityVerificationStatus: {
+		type: String,
+		default: "not-submited",
+		enum: ["not-submited", "pending", "approved", "rejected"],
+	  },	
+	accountDetails: {
+		type: Object,
+		default: null,
+	  },
 	isActive: {
 		type: Boolean,
 		required: true,
@@ -82,6 +97,13 @@ const userSchema = new Schema<Iuser>({
 		{
 			type: mongoose.Schema.Types.ObjectId,
 			ref: 'Wallet',
+			required: true,
+		}
+	],
+	kyc: [
+		{
+			type: mongoose.Schema.Types.ObjectId,
+			ref: 'Kyc',
 			required: true,
 		}
 	],
@@ -164,3 +186,77 @@ userSchema.methods.matchTransactionPin = function (enteredPin: any) {
 const User = mongoose.model<Iuser>('User', userSchema)
 
 export default User;
+
+
+// export const verifyUserBvn = async (req: Request, res: Response, next: NextFunction) => {
+//     try {
+//       const { reference } = req.params;
+  
+//       if (!reference) {
+//         return res.status(400).json({
+//           success: false,
+//           message: 'Reference is required',
+//         });
+//       }
+
+//       console.log(reference);
+  
+//       const bvnFromReference = await verifyBvn(reference);
+  
+//       if (!bvnFromReference) {
+//         return res.status(404).json({
+//           success: false,
+//           message: 'BVN not found for the given reference',
+//         });
+//       }
+//             console.log(bvnFromReference);
+//       if (!req.user) {
+//         return next(new AppError(
+//             'User not authenticated', 
+//             401
+//         ));
+//     }
+
+//       // Find the user by their _id
+//       const user = await User.findOne({ _id: req.user._id });
+  
+//       if (!user) {
+//         return res.status(404).json({
+//           success: false,
+//           message: 'User not found',
+//         });
+//       }
+  
+//       // Save BVN information in the KYC model
+//       const kyc = await Kyc.create({
+//         _user: user,
+//         bvn: bvnFromReference,
+//         firstname: user.firstname, // Add the appropriate fields from the user model
+//         lastname: user.lastname, // Add the appropriate fields from the user model
+//         status: true,
+//       });
+  
+//       // Update user's bvnAttached field
+//       user.isKycVerified = true;
+  
+//       // Save the updated user
+//       await user.save();
+  
+//       // Log to check if BVN was added
+//       console.log(`BVN added to user ${user._id}: ${bvnFromReference}`);
+  
+//       // Respond with success message
+//       return res.status(200).json({
+//         success: true,
+//         message: 'BVN verified successfully',
+//         data: kyc,
+//       });
+  
+//     } catch (error) {
+//       console.error('Error in BVN verification:', error);
+//       return res.status(500).json({
+//         success: false,
+//         message: 'Internal server error',
+//       });
+//     }
+//   };

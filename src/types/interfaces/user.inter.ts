@@ -19,12 +19,23 @@ export interface Iuser extends Document {
     postalCode: number;
     image?: string | '';
     tagNumber: string;
+    bvn : string
+    accountDetails: {
+        number: string;
+        bankName: string;
+        flwRef: string;
+        orderRef: string;
+        createdAt: Date;
+      };
+    isIdentityVerified: boolean;
+    identityVerificationStatus: string;
     dateJoined: Date;
     isActive: boolean;
     isKycVerified: boolean;
     profileSet: boolean;
     isAdmin: boolean;
     wallet: Schema.Types.ObjectId[];
+    kyc: Schema.Types.ObjectId[]; 
     verificationToken: string;
     verificationTokenExpires: Date;
     otp: string | null;

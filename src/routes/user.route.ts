@@ -3,7 +3,7 @@ import {
     getProfile,
     setResiAdd,
     setUpAcc,
-    BvnVerification,
+    InititateBvnVerification,
     verifyUserBvn,
     generateQr,
     setupPin,
@@ -24,7 +24,7 @@ router.put('/setaddress/:id', setResiAdd)
 
 router.put('/setaccount/:id', setUpAcc)
 
-router.post('/setupBvn', BvnVerification)
+router.post('/setupBvn', InititateBvnVerification)
 
 router.post('/verifybvn/:reference', verifyUserBvn)
 

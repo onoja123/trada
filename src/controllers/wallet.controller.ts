@@ -6,7 +6,7 @@ import { Iuser } from './../types/interfaces/user.inter';
 import Kyc from '../models/kyc.model'
 import Wallet from '../models/wallet.model';
 import {
-     createWalletForUser,
+     createVirtualAccountNumber,
      fundWalletWithCard,
      withdrawFunds,
      transferToBank
@@ -24,30 +24,16 @@ import Transaction from '../models/transaction.model';
 export const createWallet = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     try {
 
-        const { bvn } = req.body;
-        if (!req.user) {
-            return next(new AppError('User not authenticated', 401));
-        }
-
-        // Find the user by their _id
-        const user = await User.findOne({ _id: req.user._id });
-
-        if (!user) {
-            return next(new AppError('User not found', 404));
-        }
-
-        // Use the createWalletForUser function to create a wallet for the user
-        const wallet = await createWalletForUser(user ,bvn, user.email);
-
-        res.status(200).json({
-            success: true,
-            data: wallet,
-        });
     } catch (error) {
         console.error('Error creating wallet:', error);
         return next(new AppError('Internal server error', 500));
+    } finally {
+        console.log('End creating wallet...');
     }
 });
+
+
+
 
 /**
  * @author Okpe Onoja <okpeonoja18@gmail.com>

@@ -8,9 +8,11 @@ import qrcode from 'qrcode';
 import generateTagNumber from '../utils/tagGen';
 import { Iuser } from "../types/interfaces/user.inter";
 import {
+  BvnVerificationResponse,
   initateBvn,
   verifyBvn
 }from '../services/kyc.service'
+import { createVirtualAccountNumber } from '../services/payment.service';
 
 declare global {
     namespace Express {
@@ -264,7 +266,7 @@ export const setUpAcc = catchAsync(async(req:Request, res:Response, next: NextFu
  * @access PRIVATE
  * @type POST
  */
-  export const BvnVerification = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  export const InititateBvnVerification = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { bvn, firstname, lastname } = req.body;
         console.log(req.body);
@@ -295,7 +297,6 @@ export const setUpAcc = catchAsync(async(req:Request, res:Response, next: NextFu
             res.status(200).json({
                 success: true,
                 isBvnValid,
-                message: 'BVN verified successfully',
             });
         } else {
             res.status(400).json({
@@ -319,63 +320,63 @@ export const setUpAcc = catchAsync(async(req:Request, res:Response, next: NextFu
  * @access PRIVATE
  * @type POST
  */
-export const verifyUserBvn = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-
-      const {reference } = req.params;
-
+  export const verifyUserBvn = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { reference } = req.params;
+  
       if (!reference) {
-          return res.status(400).json({
-              success: false,
-              message: 'Reference is required',
-          });
+        return res.status(400).json({
+          success: false,
+          message: 'Reference is required',
+        });
       }
-
+  
+      if (!req.user) {
+        return next(new AppError('User not authenticated', 401));
+      }
+  
+      // Find the user by their _id
+      const user = await User.findOne({ _id: req.user._id });
+  
+      if (!user) {
+        return next(new AppError('User not found', 404));
+      }
+  
       const isBvnValid = await verifyBvn(reference);
-
-      if (isBvnValid) {
-          const { bvn, firstname, lastname } = req.body;
-
-          // Find the user by their _id
-          const user = await User.findOne({ /* Add your search criteria here */ });
-
-          if (!user) {
-              return res.status(404).json({
-                  success: false,
-                  message: 'User not found',
-              });
-          }
-
-          // Save BVN information in the KYC model
-          const kyc = await Kyc.create({
-              _user: user,
-              bvn,
-              firstname,
-              lastname,
-              status: true,
-          });
-
-          user.isKycVerified = true
-          // Respond with success message
-          return res.status(200).json({
-              success: true,
-              message: 'BVN verified successfully',
-              data: kyc,
-          });
-      } else {
-          return res.status(400).json({
-              success: false,
-              message: 'BVN verification failed',
-          });
+  
+      if (!isBvnValid) {
+        return res.status(400).json({
+          success: false,
+          message: 'BVN verification failed',
+        });
       }
-  } catch (error) {
+  
+      // If BVN verification is successful, create a virtual account number for the user
+      if (isBvnValid.status === 'COMPLETED') {
+        await createVirtualAccountNumber(user, user.email, user.bvn);
+      }
+  
+      // Log the data from the reference
+      console.log('BVN verification successful. Logging data:', isBvnValid);
+  
+      // Continue with any additional logic or response as needed
+      return res.status(200).json({
+        success: true,
+        message: 'BVN verified successfully',
+        data: isBvnValid, // You can include additional data if needed
+      });
+    } catch (error) {
       console.error('Error in BVN verification:', error);
       return res.status(500).json({
-          success: false,
-          message: 'Internal server error',
+        success: false,
+        message: 'Internal server error',
       });
-  }
-};
+    }
+  };
+  
+  
+  
+  
 
 /**
  * @author Okpe Onoja <okpeonoja18@gmail.com>

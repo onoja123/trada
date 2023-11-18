@@ -14,6 +14,7 @@
   "devDependencies": {
     "@types/bcrypt": "^5.0.1",
     "@types/nodemailer": "^6.4.13",
+    "@types/nodemailer-express-handlebars": "^4.0.5",
     "@types/otp-generator": "^4.0.2",
     "@types/qrcode": "^1.5.5",
     "@types/twilio": "^3.19.3",
@@ -25,6 +26,7 @@
     "express": "^4.18.2",
     "firebase-admin": "^11.11.0",
     "mongoose": "^8.0.0",
+    "nodemailer-express-handlebars": "^6.1.0",
     "otp-generator": "^4.0.1",
     "qrcode": "^1.5.3",
     "socket.io": "^4.7.2",

@@ -1,47 +1,79 @@
 import nodemailer from 'nodemailer';
+import hbs from "nodemailer-express-handlebars";
 import dotenv from 'dotenv';
+import { Templates } from '../types/interfaces/email-tempate.inter';
 
-dotenv.config(); // Load environment variables from .env file
+dotenv.config();
 
-interface EmailOptions {
-  email: string;
-  from?: string;
-  subject: string;
-  message: string;
-}
+class sendEmail {
+  private sender: string;
+  private nodeMailerTransporter: nodemailer.Transporter;
 
-const sendEmail = async (options: EmailOptions): Promise<void> => {
-  try {
-    const user = process.env.MAIL_USER || 'jhhh'; // Use environment variable or fallback
-    const pass = process.env.MAIL_PASS || 'hhhh'; // Use environment variable or fallback
-    const host = process.env.MAIL_HOST || 'hhhh'; // Use environment variable or fallback
-    const port = parseInt(process.env.MAIL_PORT || '587'); // Use environment variable or fallback
-    const MAIL_NAME = 'No-Reply';
+  constructor() {
+    this.sender = `FINLAP <${process.env.EMAIL_ADDRESS}>`;
 
-    // Create a transporter
-    const transporter = nodemailer.createTransport({
-      host,
-      port,
+    this.nodeMailerTransporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
       auth: {
-        user,
-        pass,
+        user: process.env.EMAIL_ADDRESS,
+        pass: process.env.EMAIL_PASSWORD,
       },
     });
 
-    // Define mail options
-    const mailOptions = {
-      from: options.from ? `${options.from} <${user}>` : `${MAIL_NAME} <${user}>`,
-      to: options.email,
-      subject: options.subject,
-      html: options.message,
+    this.nodeMailerTransporter.use(
+      "compile",
+      hbs({
+        viewPath: "src/views/emails/templates",
+        extName: ".hbs",
+        viewEngine: {
+          extname: ".hbs",
+          layoutsDir: "src/views/emails/",
+          defaultLayout: "layout",
+          partialsDir: "src/views/emails/partials",
+        },
+      })
+    );
+  }
+
+  sendMail = async (mailOptions: nodemailer.SendMailOptions) =>
+    new Promise((resolve, reject) => {
+      this.nodeMailerTransporter.sendMail(mailOptions, (err, info) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        resolve(info);
+        return;
+      });
+    });
+
+  sendTemplatedEmail = async ({
+    recipients,
+    template,
+    templateData,
+  }: {
+    recipients: Array<string> | string;
+    template: Templates;
+    templateData: any;
+  }): Promise<Boolean> => {
+    let mailOptions: any = {
+      from: this.sender,
+      to: recipients,
+      subject: template.subject,
+      template: template.name,
+      context: templateData,
     };
 
-    // Send email
-    const info = await transporter.sendMail(mailOptions);
-    console.log('Email sent:', info.response);
-  } catch (err) {
-    console.error('Error sending email:', err);
-  }
-};
+    try {
+      const isSent = await this.sendMail(mailOptions);
+      return !!isSent;
+    } catch (e) {
+      console.log(e);
+      return false;
+    }
+  };
+}
 
 export default sendEmail;

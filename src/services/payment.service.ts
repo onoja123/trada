@@ -8,34 +8,38 @@ const flwApiUrl = process.env.FLW_URL || ''
 const flutterwaveApiKey = process.env.FLW_API_KEY || 'FLWSECK_TEST-eab56b1d3cdf332da191b8dd2b04f22d-X'
 
 // Helper function to create a wallet for the user
-export const createWalletForUser = async (user: Iuser, email: string, bvn: string,): Promise<Iwallet> => {
+export const createVirtualAccountNumber = async (
+    user: Iuser,
+    email: string,
+    bvn: string
+  ): Promise<Iuser> => {
     try {
-        const flutterwaveApiUrl = 'https://api.flutterwave.com/v3/virtual-account-numbers';
-
-        const response = await axios.post(
-            `${flutterwaveApiUrl}/virtual-account-numbers`,
-            {
-                user_id: user._id,
-                bvn,
-                email,
-                "is_permanent": true,
-
-            },
-            {
-                headers: {
-                    'Authorization': `Bearer ${flutterwaveApiKey}`,
-                    'Content-Type': 'application/json',
-                },
-            }
-        );
-
-        return response.data;
+      const flutterwaveApiUrl = 'https://api.flutterwave.com/v3';
+  
+      const response = await axios.post(
+        `${flutterwaveApiUrl}/virtual-account-numbers`,
+        {
+          user_id: user._id,
+          bvn,
+          email,
+          is_permanent: true,
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${flutterwaveApiKey}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+  
+      return response.data;
     } catch (error) {
-        console.error('Error creating wallet with Flutterwave:', error);
-        throw new AppError('Error creating wallet with Flutterwave', 500);
+      console.error('Error creating wallet with Flutterwave:', error);
+      throw new AppError('Error creating wallet with Flutterwave', 500);
     }
-
-};
+  };
+  
+  
 
 // Helper function to fund wallet with card
 export const fundWalletWithCard = async (cardNumber: string, cardExpiry: string, cardCVV: string, amount: number): Promise<any> => {

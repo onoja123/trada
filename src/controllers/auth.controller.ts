@@ -221,8 +221,11 @@ export const login = catchAsync(async (req: Request, res: Response, next: NextFu
  * @type POST
  */
 
-export const resendVerification = catchAsync(async(req: Request, res: Response, next: NextFunction)=>{
-    const user = await User.findOne({ email: req.body.email });
+export const resendVerification = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  let user; // Declare user outside the try block
+
+  try {
+    user = await User.findOne({ email: req.body.email });
 
     if (!user) {
       return res.status(404).json({
@@ -230,46 +233,60 @@ export const resendVerification = catchAsync(async(req: Request, res: Response, 
         message: 'User not found',
       });
     }
-  
-    if (user.isActive === true) {
+
+    if (user.isActive) {
       return res.status(400).json({
         success: false,
         message: 'Account has already been verified',
       });
     }
-  
-  const otp = (user.otp = otpGenerator.generate(4, {
-    upperCaseAlphabets: false,
-    specialChars: false,
-    lowerCaseAlphabets: false,
-  }));
-  await user.save({ validateBeforeSave: false });
 
-    console.log(otp)
+    const otp = otpGenerator.generate(4, {
+      upperCaseAlphabets: false,
+      specialChars: false,
+      lowerCaseAlphabets: false,
+    });
+
+    await user.save({ validateBeforeSave: false });
+
+    console.log(otp);
+
     const message = `
       Hi there ${user.firstname}!
       Here's a new code to verify your account.${otp}`;
-  
-    try {
-      await sendEmail({
-        email: user.email,
+
+    const emailSender = new sendEmail();
+
+    await emailSender.sendTemplatedEmail({
+      recipients: user.email,
+      template: {
+        name: 'verification', // Change this based on your template name
         subject: 'Verification Link 🚀!',
-        message,
-      });
-      res.status(200).json({
-        success: true,
-        message: 'Verification link sent successfully!',
-      });
-    } catch (err) {
-      user.otp = null;
-      await user.save({ validateBeforeSave: false });
-  
+      },
+      templateData: { message }, // Adjust this based on your template data structure
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Verification link sent successfully!',
+    });
+  } catch (err) {
+    if (!user) {
       return res.status(500).json({
         success: false,
-        message: "Couldn't send the verification email",
+        message: "Couldn't send the verification email. User not found.",
       });
     }
-})
+
+    user.otp = null;
+    await user.save({ validateBeforeSave: false });
+
+    return res.status(500).json({
+      success: false,
+      message: "Couldn't send the verification email",
+    });
+  }
+});
 
 /**
  * @author Okpe Onoja <okpeonoja18@gmail.com>
@@ -307,11 +324,18 @@ export const forgotPassword = catchAsync(async(req:Request, res:Response, next: 
     Otp expires in 10 minutes.`;
 
   try {
-    await sendEmail({
-      email: user.email,
-      subject: 'Forgot password',
-      message,
+
+    const emailSender = new sendEmail();
+
+    await emailSender.sendTemplatedEmail({
+      recipients: user.email,
+      template: {
+        name: 'verification', // Change this based on your template name
+        subject: 'Verification Link 🚀!',
+      },
+      templateData: { message }, // Adjust this based on your template data structure
     });
+
 
     res.status(200).json({
       success: true,

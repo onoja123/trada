@@ -1,16 +1,18 @@
 import express from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { 
     getProfile,
     setResiAdd,
     setUpAcc,
     InititateBvnVerification,
+    verifyAndCreateAccount,
     verifyUserBvn,
     generateQr,
     setupPin,
     changePin,
     confirmPin
-
 } from '../controllers/user.controller'
+import { verifyWebhookSignature } from '../middleware/webhook.signature';
 import { protect } from '../controllers/auth.controller';
 
 const router = express.Router();
@@ -36,7 +38,10 @@ router.post('/changepin', changePin)
 
 router.post('/confirmpin', confirmPin)
 
+// Webhook signature verification middleware
+router.use('/', verifyWebhookSignature);
 
+router.post('/verifyandgen', verifyAndCreateAccount)
 
 export default router;
 

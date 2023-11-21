@@ -12,7 +12,7 @@ export const createVirtualAccountNumber = async (
     user: Iuser,
     email: string,
     bvn: string
-  ): Promise<Iuser> => {
+  ): Promise<any> => {
     try {
       const flutterwaveApiUrl = 'https://api.flutterwave.com/v3';
   

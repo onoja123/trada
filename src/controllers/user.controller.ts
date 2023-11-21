@@ -7,6 +7,9 @@ import Kyc from '../models/kyc.model'
 import qrcode from 'qrcode';
 import generateTagNumber from '../utils/tagGen';
 import { Iuser } from "../types/interfaces/user.inter";
+import PendingBvnVerifications from '../models/pending-bvn-verifications';
+import { BVN_VERIFICATION_FAILED, BVN_VERIFICATION_SUCCESSFUL } from '../views/emails';
+import sendEmail from '../utils/sendEmail';
 import {
   BvnVerificationResponse,
   initateBvn,
@@ -22,7 +25,7 @@ declare global {
     }
   }
 
-
+  const mailer = new sendEmail();
 
 /**
  * @author Okpe Onoja <okpeonoja18@gmail.com>
@@ -315,68 +318,103 @@ export const setUpAcc = catchAsync(async(req:Request, res:Response, next: NextFu
 
   /**
  * @author Okpe Onoja <okpeonoja18@gmail.com>
- * @description verify bvn
+ * @description verify user bvn and create account
  * @route `/api/user/verifybvn/:reference`
  * @access PRIVATE
  * @type POST
  */
-  export const verifyUserBvn = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const { reference } = req.params;
-  
-      if (!reference) {
-        return res.status(400).json({
-          success: false,
-          message: 'Reference is required',
-        });
-      }
-  
-      if (!req.user) {
-        return next(new AppError('User not authenticated', 401));
-      }
-  
-      // Find the user by their _id
-      const user = await User.findOne({ _id: req.user._id });
-  
-      if (!user) {
-        return next(new AppError('User not found', 404));
-      }
-  
-      const isBvnValid = await verifyBvn(reference);
-  
-      if (!isBvnValid) {
-        return res.status(400).json({
-          success: false,
-          message: 'BVN verification failed',
-        });
-      }
-  
-      // If BVN verification is successful, create a virtual account number for the user
-      if (isBvnValid.status === 'COMPLETED') {
-        await createVirtualAccountNumber(user, user.email, user.bvn);
-      }
-  
-      // Log the data from the reference
-      console.log('BVN verification successful. Logging data:', isBvnValid);
-  
-      // Continue with any additional logic or response as needed
-      return res.status(200).json({
-        success: true,
-        message: 'BVN verified successfully',
-        data: isBvnValid, // You can include additional data if needed
-      });
-    } catch (error) {
-      console.error('Error in BVN verification:', error);
-      return res.status(500).json({
+// ... (other imports and code)
+
+export const verifyUserBvn = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { reference } = req.params;
+
+    if (!reference) {
+      return res.status(400).json({
         success: false,
-        message: 'Internal server error',
+        message: 'Reference is required',
       });
     }
-  };
-  
-  
-  
-  
+
+    if (!req.user) {
+      return next(new AppError('User not authenticated', 401));
+    }
+
+    // Find the user by their _id
+    const user = await User.findOne({ _id: req.user._id });
+
+    if (!user) {
+      return next(new AppError('User not found', 404));
+    }
+
+    const isBvnValid = await verifyBvn(reference);
+
+    if (!isBvnValid) {
+      return res.status(400).json({
+        success: false,
+        message: 'BVN verification failed',
+      });
+    }
+
+    // Log the BVN verification status
+    console.log('BVN verification status:', isBvnValid.status);
+
+    // Handle different BVN verification statuses
+    switch (isBvnValid.status) {
+      case 'success':
+        // BVN verification successful
+        // Log the data from the reference
+        console.log('BVN verification successful. Logging data:', isBvnValid);
+
+        // Create a virtual account number for the user
+        try {
+          const createdVirtualAccount = await createVirtualAccountNumber(user, user.email, user.bvn);
+
+          // Continue with any additional logic or response as needed
+          return res.status(200).json({
+            success: true,
+            message: 'BVN verified successfully',
+            data: {
+              bvnVerification: isBvnValid,
+              virtualAccount: createdVirtualAccount,
+            },
+          });
+        } catch (error) {
+          // Handle error during virtual account creation
+          console.error('Error creating virtual account:', error);
+          return res.status(500).json({
+            success: false,
+            message: 'Error creating virtual account',
+          });
+        }
+      case 'error':
+        // BVN verification error
+        return res.status(400).json({
+          success: false,
+          message: isBvnValid, // Use the specific error message from BVN verification
+          data: {
+            bvnVerification: isBvnValid,
+          },
+        });
+      default:
+        // Handle other BVN verification statuses if needed
+        return res.status(400).json({
+          success: false,
+          message: 'Unexpected BVN verification status',
+          data: {
+            bvnVerification: isBvnValid,
+          },
+        });
+    }
+  } catch (error) {
+    console.error('Error in BVN verification:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+    });
+  }
+};
+
 
 /**
  * @author Okpe Onoja <okpeonoja18@gmail.com>
@@ -595,5 +633,157 @@ export const confirmPin = catchAsync(async (req: Request, res: Response, next: N
         'Internal server error', 
         500
     ));
+  }
+});
+
+
+export const verifyAndCreateAccount = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { payload } = req.body;
+
+    if (!payload || !payload.event) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid payload',
+      });
+    }
+
+    switch (payload.event) {
+      case 'bvn.completed':
+        const { data } = payload;
+
+        try {
+          if (!data) {
+            return res.status(400).json({
+              success: false,
+              message: 'Invalid data in the payload',
+            });
+          }
+
+          if (data.status !== 'COMPLETED') {
+            return res.status(200).json({
+              success: true,
+              message: 'BVN verification status is not COMPLETED',
+            });
+          }
+
+          const pendingBvnVerification = await PendingBvnVerifications.findOne({
+            reference: data.reference,
+          });
+
+          if (!pendingBvnVerification) {
+            return res.status(400).json({
+              success: false,
+              message: 'Pending BVN verification not found',
+            });
+          }
+
+          const userWithDetails = await User.findOne({
+            $or: [
+              { _id: pendingBvnVerification.user },
+              { bvn: pendingBvnVerification.bvn },
+            ],
+          });
+
+          if (!userWithDetails) {
+            return res.status(400).json({
+              success: false,
+              message: 'User not found for BVN verification',
+            });
+          }
+
+          if (
+            userWithDetails._id.toString() !== pendingBvnVerification.user.toString() ||
+            userWithDetails.isIdentityVerified
+          ) {
+            return res.status(200).json({
+              success: true,
+              message: 'User identity already verified or BVN verification not needed',
+            });
+          }
+
+          if (
+            userWithDetails.firstname.toLowerCase() !== data.firstname.toLowerCase() ||
+            userWithDetails.lastname.toLowerCase() !== data.lastname.toLowerCase()
+          ) {
+            userWithDetails.identityVerificationStatus = 'rejected';
+            await userWithDetails.save();
+
+            PendingBvnVerifications.deleteOne({
+              _id: pendingBvnVerification._id,
+            });
+
+            mailer.sendTemplatedEmail({
+              recipients: [userWithDetails.email],
+              template: BVN_VERIFICATION_FAILED,
+              templateData: {
+                firstname: userWithDetails.firstname,
+                reason: 'Names mismatch',
+              },
+            });
+
+            return res.status(200).json({
+              success: true,
+              message: 'BVN verification failed due to names mismatch',
+            });
+          } else {
+            userWithDetails.identityVerificationStatus = 'verified';
+            userWithDetails.bvn = pendingBvnVerification.bvn;
+
+            const { data: accountData, status } = await createVirtualAccountNumber(
+              userWithDetails,
+              userWithDetails.email,
+              pendingBvnVerification.bvn
+            );
+
+            if (status === 'success' && accountData) {
+              userWithDetails.accountDetails = {
+                number: accountData!.account_number,
+                bankName: accountData!.bank_name,
+                flwRef: accountData!.flw_ref,
+                orderRef: accountData!.order_ref,
+                createdAt: new Date(accountData!.created_at),
+              };
+            }
+
+            await userWithDetails.save();
+
+            PendingBvnVerifications.deleteOne({
+              _id: pendingBvnVerification._id,
+            });
+
+            mailer.sendTemplatedEmail({
+              recipients: [userWithDetails.email],
+              template: BVN_VERIFICATION_SUCCESSFUL,
+              templateData: {
+                firstname: userWithDetails.firstname,
+              },
+            });
+
+            return res.status(200).json({
+              success: true,
+              message: 'BVN verification successful',
+            });
+          }
+        } catch (error) {
+          console.error('Error in BVN verification:', error);
+          return res.status(500).json({
+            success: false,
+            message: 'Internal server error during BVN verification',
+          });
+        }
+
+      default:
+        return res.status(400).json({
+          success: false,
+          message: 'Unsupported event type',
+        });
+    }
+  } catch (error) {
+    console.error('Error in verifyAndCreateAccount:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+    });
   }
 });

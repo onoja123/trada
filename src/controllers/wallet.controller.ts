@@ -13,6 +13,7 @@ import {
      } from '../services/payment.service';
 import { Itransaction } from '../types/interfaces/transaction.inter';
 import Transaction from '../models/transaction.model';
+import { sendSingleNotification } from '../utils/sendNotification';
 
 /**
  * @author Okpe Onoja <okpeonoja18@gmail.com>

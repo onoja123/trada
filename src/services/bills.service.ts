@@ -47,7 +47,7 @@ export const verifyBill = async (item_code: string): Promise<boolean> => {
 // Helper function to create bill payment using flutterwave API
 export const billPayment = async (item_code: string): Promise<boolean> => {
     try {
-        const otpVerificationUrl = `https://api.flutterwave.com/v3/bill-items/${item_code}/validate`;
+        const otpVerificationUrl = 'https://api.flutterwave.com/v3/bills        ';
 
         const response = await axios.get(otpVerificationUrl, {
             headers: {

@@ -1,6 +1,6 @@
 import express from 'express';
 import { 
-    createWallet,
+    getWallet,
     sendMoneyToUser,
     fundWalletBanktransfer,
     fundWalletCard,
@@ -16,7 +16,7 @@ const router = express.Router();
 // Protect all routes after this middleware
 router.use(protect);
 
-router.post('/createwallet', createWallet)
+router.get('/getwallet', getWallet)
 
 router.post('/sendmoney', sendMoneyToUser)
 

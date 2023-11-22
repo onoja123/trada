@@ -1,4 +1,4 @@
-import { Iuser } from './../types/interfaces/user.inter';
+import { Iuser } from '../types/interfaces/user.inter';
 import AppError from '../utils/appError';
 import { Iwallet } from '../types/interfaces/wallet.inter';
 import axios from 'axios';
@@ -42,8 +42,11 @@ export const createVirtualAccountNumber = async (
   
 
 // Helper function to fund wallet with card
-export const fundWalletWithCard = async (cardNumber: string, cardExpiry: string, cardCVV: string, amount: number): Promise<any> => {
-
+export const fundWalletWithCard = async (
+    cardNumber: string, 
+    cardExpiry: string, 
+    cardCVV: string, 
+    amount: number): Promise<any> => {
 
     const flwApiUrl = 'https://api.flutterwave.com/v3/virtual-account-numbers';
     const response = await axios.post(
@@ -66,7 +69,10 @@ export const fundWalletWithCard = async (cardNumber: string, cardExpiry: string,
 };
 
 // Helper function to withraw funds from wallet
-export const withdrawFunds = async (amount: number, recipientAccountNumber: string, recipientBankCode: string): Promise<any> => {
+export const withdrawFunds = async (
+    amount: number, 
+    recipientAccountNumber: string, 
+    recipientBankCode: string): Promise<any> => {
 
     const flwApiUrl = 'https://api.flutterwave.com/v3/virtual-account-numbers';
     const response = await axios.post(
@@ -112,4 +118,78 @@ export const transferToBank = async (account_bank: string, account_number: strin
     );
 
     return response.data;
+};
+
+
+// Helper function to create virtual with card
+export const createCard = async (cardNumber: string, cardExpiry: string, cardCVV: string, amount: number): Promise<any> => {
+
+
+  const flwApiUrl = 'ttps://api.flutterwave.com/v3/virtual-cards';
+  const response = await axios.post(
+      flwApiUrl,
+      {
+          cardNumber,
+          cardExpiry,
+          cardCVV,
+          amount,
+      },
+      {
+          headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${flutterwaveApiKey}`,
+          },
+      }
+  );
+
+  return response.data;
+};
+
+// Helper function to fund wallet with card
+export const fundCard = async (cardNumber: string, cardExpiry: string, cardCVV: string, amount: number): Promise<any> => {
+
+
+  const flwApiUrl = 'https://api.flutterwave.com/v3/virtual-account-numbers';
+  const response = await axios.post(
+      flwApiUrl,
+      {
+          cardNumber,
+          cardExpiry,
+          cardCVV,
+          amount,
+      },
+      {
+          headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${flutterwaveApiKey}`,
+          },
+      }
+  );
+
+  return response.data;
+};
+
+
+// Helper function to withdraw funds from card
+export const withdrawCard = async (cardNumber: string, cardExpiry: string, cardCVV: string, amount: number): Promise<any> => {
+
+
+  const flwApiUrl = 'https://api.flutterwave.com/v3/virtual-account-numbers';
+  const response = await axios.post(
+      flwApiUrl,
+      {
+          cardNumber,
+          cardExpiry,
+          cardCVV,
+          amount,
+      },
+      {
+          headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${flutterwaveApiKey}`,
+          },
+      }
+  );
+
+  return response.data;
 };

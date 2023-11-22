@@ -6,35 +6,13 @@ import { Iuser } from './../types/interfaces/user.inter';
 import Kyc from '../models/kyc.model'
 import Wallet from '../models/wallet.model';
 import {
-     createVirtualAccountNumber,
      fundWalletWithCard,
      withdrawFunds,
      transferToBank
-     } from '../services/payment.service';
+     } from '../services/wallet.service';
 import { Itransaction } from '../types/interfaces/transaction.inter';
 import Transaction from '../models/transaction.model';
 import { sendSingleNotification } from '../utils/sendNotification';
-
-/**
- * @author Okpe Onoja <okpeonoja18@gmail.com>
- * @description Create wallet
- * @route `/api/wallet/create wallet`
- * @access PRIVATE
- * @type GET
- */
-export const createWallet = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    try {
-
-    } catch (error) {
-        console.error('Error creating wallet:', error);
-        return next(new AppError('Internal server error', 500));
-    } finally {
-        console.log('End creating wallet...');
-    }
-});
-
-
-
 
 /**
  * @author Okpe Onoja <okpeonoja18@gmail.com>
@@ -43,54 +21,49 @@ export const createWallet = catchAsync(async (req: Request, res: Response, next:
  * @access PRIVATE
  * @type GET
  */
-export const getWallet = catchAsync(async(req: Request, res: Response, next: NextFunction)=>{
+export const getWallet = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     try {
-        
         if (!req.user) {
-            return next(new AppError(
-                'User not authenticated', 
-                401
-            ));
+            return next(new AppError('User not authenticated', 401));
         }
 
         // Find the user by their _id
         const user = await User.findOne({ _id: req.user._id });
 
         if (!user) {
-            return next(new AppError(
-                'User not found', 
-                404
-            ));
+            return next(new AppError('User not found', 404));
         }
 
-		const wallet = await Wallet.findOne({ _user: req.user })
-			.populate({
-				path: 'transactions',
-				options: {
-					sort: {
-						date: -1,
-					},
-				},
-			});
+        // Check if the user is active
+        if (!user.isActive) {
+            return next(new AppError('User is not active', 404));
+        }
 
-        if (!wallet && user.isActive === false) {
-            return next(new AppError(
-                'User not found', 
-                404
-            ));
+        // Find the user's wallet and populate transactions
+        const wallet = await Wallet.findOne({ _user: req.user })
+            .populate({
+                path: '_transactions',
+                options: {
+                    sort: {
+                        date: -1,
+                    },
+                },
+            });
+
+        if (!wallet) {
+            return next(new AppError('Wallet not found', 404));
         }
 
         res.status(200).json({
             success: true,
-            data: wallet
-        })
+            data: wallet,
+        });
     } catch (error) {
-        return next(new AppError(
-            'Internal server error', 
-            500
-        ))
+        console.error('Error in getWallet:', error);
+        return next(new AppError('Internal server error', 500));
     }
-})
+});
+
 
 /**
  * @author Okpe Onoja <okpeonoja18@gmail.com>
@@ -223,7 +196,7 @@ export const fundWalletBanktransfer = catchAsync(async(req:Request, res:Response
 
         const wallet = await Wallet.findOne({ _user: req.user })
         .populate({
-            path: 'transactions',
+            path: '_transactions',
             options: {
                 sort: {
                     date: -1,
@@ -670,5 +643,53 @@ export const makePaymentFromQr = catchAsync(async (req: Request, res: Response, 
             'Internal server error',
             500
         ));
+    }
+});
+
+/**
+ * @author Okpe Onoja <okpeonoja18@gmail.com>
+ * @description Create virtual card 
+ * @route `/api/wallet/virtualcard`
+ * @access PRIVATE
+ * @type POST
+ */
+export const createVirtualCard = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+
+    } catch (error) {
+        console.error('Error in getWallet:', error);
+        return next(new AppError('Internal server error', 500));
+    }
+});
+
+/**
+ * @author Okpe Onoja <okpeonoja18@gmail.com>
+ * @description fund virtual card 
+ * @route `/api/wallet/fundcard`
+ * @access PRIVATE
+ * @type POST
+ */
+export const fundVirtualCard = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+
+    } catch (error) {
+        console.error('Error in getWallet:', error);
+        return next(new AppError('Internal server error', 500));
+    }
+});
+
+/**
+ * @author Okpe Onoja <okpeonoja18@gmail.com>
+ * @description withdraw funds from virtual card 
+ * @route `/api/wallet/withdrawcard`
+ * @access PRIVATE
+ * @type POST
+ */
+export const withdrawVirtualCard = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+
+    } catch (error) {
+        console.error('Error in getWallet:', error);
+        return next(new AppError('Internal server error', 500));
     }
 });

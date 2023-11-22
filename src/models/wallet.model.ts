@@ -5,12 +5,12 @@ const walletSchema = new Schema<Iwallet>(
     {
         _user: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'User', // Assuming the reference model is 'User'
+            ref: 'User',
             required: true,
         },
         _transactions: [{
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'Transaction', // Assuming the reference model is 'Transaction'
+            ref: 'Transaction',
         }],
         balance: {
             type: Number,

@@ -3,13 +3,13 @@ import { Document, Schema } from "mongoose";
 export interface Iuser extends Document {
     firstname: string;
     lastname: string;
-    email: string;
-    phone: string;
     username: string;
-    password: string;
-    pin: string;
+    email: string;
     dateOfBirth: Date;
     gender: string;
+    phone: string;
+    password: string;
+    pin: string;
     passwordConfirm: string;
     country: string;
     state: string;

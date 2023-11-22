@@ -260,7 +260,7 @@ export const resendVerification = catchAsync(async (req: Request, res: Response,
     await emailSender.sendTemplatedEmail({
       recipients: user.email,
       template: {
-        name: 'verification', // Change this based on your template name
+        name: 'Verification',
         subject: 'Verification Link 🚀!',
       },
       templateData: { message }, // Adjust this based on your template data structure

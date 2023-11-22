@@ -4,9 +4,8 @@ import {
     getProfile,
     setResiAdd,
     setUpAcc,
-    InititateBvnVerification,
+    InitiateBvnVerification,
     verifyAndCreateAccount,
-    verifyUserBvn,
     generateQr,
     setupPin,
     changePin,
@@ -26,9 +25,7 @@ router.put('/setaddress/:id', setResiAdd)
 
 router.put('/setaccount/:id', setUpAcc)
 
-router.post('/setupBvn', InititateBvnVerification)
-
-router.post('/verifybvn/:reference', verifyUserBvn)
+router.post('/setupBvn', InitiateBvnVerification)
 
 router.post('/generateqr', generateQr)
 

@@ -13,12 +13,11 @@ class sendEmail {
     this.sender = `FINLAP <${process.env.EMAIL_ADDRESS}>`;
 
     this.nodeMailerTransporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 465,
-      secure: true,
+      host: "smtp-relay.brevo.com",
+      port: 587,
       auth: {
-        user: process.env.EMAIL_ADDRESS,
-        pass: process.env.EMAIL_PASSWORD,
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS,
       },
     });
 
@@ -35,6 +34,8 @@ class sendEmail {
         },
       })
     );
+
+    console.log('Email transporter created successfully');
   }
 
   sendMail = async (mailOptions: nodemailer.SendMailOptions) =>
@@ -42,9 +43,11 @@ class sendEmail {
       this.nodeMailerTransporter.sendMail(mailOptions, (err, info) => {
         if (err) {
           reject(err);
+          console.error('Error sending email:', err);
           return;
         }
         resolve(info);
+        console.log('Email sent successfully:', info);
         return;
       });
     });
@@ -57,7 +60,7 @@ class sendEmail {
     recipients: Array<string> | string;
     template: Templates;
     templateData: any;
-  }): Promise<Boolean> => {
+  }): Promise<boolean> => {
     let mailOptions: any = {
       from: this.sender,
       to: recipients,
@@ -68,9 +71,14 @@ class sendEmail {
 
     try {
       const isSent = await this.sendMail(mailOptions);
+      if (isSent) {
+        console.log('Email sent successfully:', mailOptions);
+      } else {
+        console.error('Failed to send email:', mailOptions);
+      }
       return !!isSent;
     } catch (e) {
-      console.log(e);
+      console.error('Error sending templated email:', e);
       return false;
     }
   };

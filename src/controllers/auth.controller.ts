@@ -263,7 +263,7 @@ export const resendVerification = catchAsync(async (req: Request, res: Response,
         name: 'Verification',
         subject: 'Verification Link 🚀!',
       },
-      templateData: { message }, // Adjust this based on your template data structure
+      templateData: { message },
     });
 
     res.status(200).json({
@@ -296,61 +296,73 @@ export const resendVerification = catchAsync(async (req: Request, res: Response,
  * @type POST
  */
 
-export const forgotPassword = catchAsync(async(req:Request, res:Response, next: NextFunction) => {
-  //Get user based on email
-
-  const user = await User.findOne({ email: req.body.email });
-
-  if (!user) {
-    return res.status(404).json({
-      success: false,
-      message: 'There is no user with this email address',
-    });
-  }
-
-  const otp = (user.otp = otpGenerator.generate(4, {
-    upperCaseAlphabets: false,
-    specialChars: false,
-    lowerCaseAlphabets: false,
-  }));
-  await user.save({ validateBeforeSave: false });
-
-  console.log(otp);
-
-  const message = `
-    Hi ${user.firstname}
-    We heard you are having problems with your password.
-    here is your otp vefication code ${otp}
-    Otp expires in 10 minutes.`;
-
+export const forgotPassword = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   try {
+    // Get user based on email
+    const user = await User.findOne({ email: req.body.email });
 
-    const emailSender = new sendEmail();
+    if (!user) {
+      console.log(`User not found for email: ${req.body.email}`);
+      return res.status(404).json({
+        success: false,
+        message: 'There is no user with this email address',
+      });
+    }
 
-    await emailSender.sendTemplatedEmail({
-      recipients: user.email,
-      template: {
-        name: 'verification', // Change this based on your template name
-        subject: 'Verification Link 🚀!',
-      },
-      templateData: { message }, // Adjust this based on your template data structure
+    // Generate OTP
+    const otp = otpGenerator.generate(4, {
+      upperCaseAlphabets: false,
+      specialChars: false,
+      lowerCaseAlphabets: false,
     });
 
-
-    res.status(200).json({
-      success: true,
-      message: 'Email sent sucessfully 🚀!',
-    });
-  } catch (err) {
-    user.otp = null;
+    // Save OTP to the user
+    user.otp = otp;
     await user.save({ validateBeforeSave: false });
 
-    return res.status(500).json({
-      success: false,
-      message: 'There was an error sending the email. Try again later!',
-    });
+    console.log(`Generated OTP for ${user.firstname}: ${otp}`);
+
+    try {
+      // Send email using the template
+      const emailSender = new sendEmail();
+      await emailSender.sendTemplatedEmail({
+        recipients: user.email,
+        template: {
+          name: 'verification',
+          subject: 'Verification Link 🚀!',
+        },
+        templateData: {
+          user,
+          otp,
+        },
+      });
+
+      console.log(`Email sent successfully to ${user.email}`);
+
+      res.status(200).json({
+        success: true,
+        message: 'Email sent successfully 🚀!',
+      });
+    } catch (err) {
+      // Handle email sending error
+      user.otp = null;
+      await user.save({ validateBeforeSave: false });
+
+      console.error('Error sending email:', err);
+
+      return res.status(500).json({
+        success: false,
+        message: 'There was an error sending the email. Try again later!',
+      });
+    }
+  } catch (error) {
+    // Handle unexpected errors
+    console.error('Unexpected error:', error);
+    next(error); // Pass the error to the error handling middleware
   }
-})
+});
+
+
 
 /**
  * @author Okpe Onoja <okpeonoja18@gmail.com>

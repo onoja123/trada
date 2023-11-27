@@ -5,9 +5,9 @@
   "main": "server.ts",
   "scripts": {
     "dev": "nodemon src/server.ts",
-    "build": "rimraf ./dist && tsc --outDir ./dist && echo 'dist folder created'",
-    "start": "node dist/server.js"
-  },
+    "build": "rimraf ./dist && tsc --outDir ./dist/src && echo 'dist folder created'",
+    "start": "node dist/src/server.js"
+  },  
   "keywords": [],
   "author": "",
   "license": "ISC",

@@ -34,8 +34,6 @@ class sendEmail {
         },
       })
     );
-
-    console.log('Email transporter created successfully');
   }
 
   sendMail = async (mailOptions: nodemailer.SendMailOptions) =>
@@ -43,11 +41,11 @@ class sendEmail {
       this.nodeMailerTransporter.sendMail(mailOptions, (err, info) => {
         if (err) {
           reject(err);
-          console.error('Error sending email:', err);
+          // console.error('Error sending email:', err);
           return;
         }
         resolve(info);
-        console.log('Email sent successfully:', info);
+        // console.log('Email sent successfully:', info);
         return;
       });
     });
@@ -72,13 +70,13 @@ class sendEmail {
     try {
       const isSent = await this.sendMail(mailOptions);
       if (isSent) {
-        console.log('Email sent successfully:', mailOptions);
+        // console.log('Email sent successfully:', mailOptions);
       } else {
-        console.error('Failed to send email:', mailOptions);
+        // console.error('Failed to send email:', mailOptions);
       }
       return !!isSent;
     } catch (e) {
-      console.error('Error sending templated email:', e);
+      // console.error('Error sending templated email:', e);
       return false;
     }
   };

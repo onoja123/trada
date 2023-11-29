@@ -107,7 +107,7 @@ export const signUp = catchAsync(async (req: Request, res: Response, next: NextF
     await newUser.save({ validateBeforeSave: false });
 
     createSendToken(newUser, 201, res);
-  } catch (err) {
+  } catch (err: any) {
     console.log(err);
     return res.status(500).json({
       success: false,

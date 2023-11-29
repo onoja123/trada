@@ -99,6 +99,7 @@ export const sendMoneyToUser = catchAsync(async (req: Request, res: Response, ne
             return next(new AppError("Please enter an amount to send and a recipient", 400));
         }
 
+        // Check if memo is provided and validate its length
         if (memo !== undefined && memo.length > 50) {
             return next(new AppError("Memo can't be longer than 50 characters", 400));
         }
@@ -122,51 +123,49 @@ export const sendMoneyToUser = catchAsync(async (req: Request, res: Response, ne
 
         // Perform the transaction (subtract from sender, add to recipient)
         senderWallet.balance -= amount;
-        // recipientUser.wallet.balance += amount;
 
         // Save the updated wallet balances
         await senderWallet.save();
-        // await recipientUser.wallet.save();
 
-
-        // You may want to have a transactions collection in your database to store transaction details
-        // Create a transaction record for the sender
+        // Create transaction records
         const senderTransaction = new Transaction({
             sender: sender._id,
             recipient: recipientUser._id,
             amount: amount,
-            type: 'debit',
+            type: 'Debit',
             paymentMethod: 'wallet',
             reference: 'Send Money',
             date: new Date(),
         });
 
-
-       // Create a transaction record for the recipient
-        await senderTransaction.save();
-
         const recipientTransaction = new Transaction({
             sender: sender._id,
             recipient: recipientUser._id,
             amount: amount,
-            type: 'credit',
+            type: 'Credit',
             paymentMethod: 'wallet',
             reference: 'Receive Money',
             date: new Date(),
         });
 
-        // Save the transaction record
+        // Save the transaction records
+        await senderTransaction.save();
         await recipientTransaction.save();
 
         res.status(200).json({
             success: true,
             message: `Successfully sent $${amount} to ${recipientUser.username}`,
+            transaction: {
+                sender: senderTransaction,
+                recipient: recipientTransaction,
+            },
         });
     } catch (error) {
         console.error('Error sending money:', error);
         return next(new AppError('Internal server error', 500));
     }
 });
+
 
 /**
  * @author Okpe Onoja <okpeonoja18@gmail.com>

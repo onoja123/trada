@@ -2,7 +2,6 @@ import http from 'http';
 import app from './app'
 require('dotenv').config();
 
-console.log(process.env.TWILIO_ACCOUNT_SID)
 const port = process.env.PORT || 4000;
 
 import connectToDatabase from './db/connect';

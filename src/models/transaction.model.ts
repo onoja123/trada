@@ -1,5 +1,6 @@
 import mongoose, { Document, Schema } from "mongoose";
 import { Itransaction } from "../types/interfaces/transaction.inter";
+import { TransactionStatus } from "../types/interfaces/transaction.inter";
 
 const transactionSchema = new Schema<Itransaction>({
     sender: {
@@ -23,6 +24,13 @@ const transactionSchema = new Schema<Itransaction>({
     paymentMethod: {
         type: String,
         required: true,
+    },
+    status: {
+        type: [{
+            type: String,
+            enum: Object.values(TransactionStatus),
+        }],
+        default: [],
     },
     reference: {
         type: String,

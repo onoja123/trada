@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const DB_URL: string = 'mongodb+srv://onoja123:Gabriella12@cluster0.vrc59cx.mongodb.net/?retryWrites=true&w=majority'
+const DB_URL: string = 'mongodb+srv://onoja123:Gabriella12@cluster0.vrc59cx.mongodb.net/trada?retryWrites=true&w=majority';
 
 const connectToDatabase = async () =>{
     try {
@@ -25,4 +25,3 @@ const connectToDatabase = async () =>{
 }
 
 export default connectToDatabase;
-

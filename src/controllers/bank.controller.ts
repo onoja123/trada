@@ -1,17 +1,12 @@
-import { Iuser } from './../types/interfaces/user.inter';
 import { NextFunction, Request, Response } from 'express';
 import AppError from '../utils/appError';
 import catchAsync from '../utils/catchAsync';
-import bcrypt from "bcrypt";
 import User from '../models/user.model';
-import Kyc from '../models/kyc.model'
-import Wallet from '../models/wallet.model';
-import { Iwallet } from '../types/interfaces/wallet.inter';
 import {
     getUserBanksFromFlw,
-    addBankToWallet,
     verifyBankAccount
 }from '../services/bank.service'
+import Bank from '../models/bank.model';
 
 
 /**
@@ -90,55 +85,120 @@ export const verifyBank = catchAsync(async (req: Request, res: Response, next: N
 /**
  * @author Okpe Onoja <okpeonoja18@gmail.com>
  * @description Add bank details
- * @route `/api/bank/addbank`
+ * @route `/api/bank`
  * @access PRIVATE
  * @type POST
  */
 export const addBank = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     try {
+        const { account_name, account_number, account_bank, type } = req.body;
 
         if (!req.user) {
-            return next(new AppError(
-              'User not authenticated', 
-              401
-          ));
+            return next(new AppError('User not authenticated', 401));
         }
 
         // Find the user by their _id
         const user = await User.findOne({ _id: req.user._id });
 
-        if(!user){
-          console.log('User not found');
-            return next(new AppError(
-              'User not found', 
-              404
-          ));
+        if (!user) {
+            console.log('User not found');
+            return next(new AppError('User not found', 404));
         }
-        // Assuming you have a wallet ID stored in req.user.walletId
-        const walletId = req.params.id;
 
-        // Extract bank details from the request body
-        const { bankName, accountNumber, accountHolderName } = req.body;
-
-        // Validate bank details (add more validation as needed)
-
-        // Call the helper function to add the bank to the wallet
-        const addedBank = await addBankToWallet(walletId, {
-            bankName,
-            accountNumber,
-            accountHolderName,
+        // Create a new bank instance
+        const newBank = new Bank({
+            user: [user._id],
+            account_name,
+            account_number,
+            account_bank,
+            type,
         });
 
-        // Handle the response accordingly
-        res.status(200).json({
+        // Save the new bank instance to the database
+        const savedBank = await newBank.save();
+
+        // Respond with the saved bank details
+        res.status(201).json({
             success: true,
-            data: addedBank,
+            data: savedBank,
         });
     } catch (error) {
-        console.error('Error adding bank to wallet:', error);
-        return next(new AppError(
-            'Internal server error', 
-            500
-        ));
+        console.error('Error adding bank account:', error);
+        return next(new AppError('Internal server error', 500));
+    }
+});
+
+/**
+ * @description Get user banks with a specified type
+ * @route `/api/bank/getbanks/:type`
+ * @access PRIVATE
+ * @type GET
+ */
+export const getBanks = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { type } = req.params;
+
+        if (!req.user) {
+            return next(new AppError('User not authenticated', 401));
+        }
+
+        // Find the user by their _id
+        const user = await User.findOne({ _id: req.user._id });
+
+        if (!user) {
+            console.log('User not found');
+            return next(new AppError('User not found', 404));
+        }
+
+        // Populate banks based on the specified type
+        const banks = await Bank.find({ user: user._id, type });
+
+        res.status(200).json({
+            success: true,
+            data: banks,
+        });
+    } catch (error) {
+        console.error('Error getting user banks:', error);
+        return next(new AppError('Internal server error', 500));
+    }
+});
+
+/**
+ * @description Get a specific bank by ID
+ * @route `/api/bank/getbank/:bankId`
+ * @access PRIVATE
+ * @type GET
+ */
+export const getBank = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { bankId } = req.params;
+
+        if (!req.user) {
+            return next(new AppError('User not authenticated', 401));
+        }
+
+        // Find the user by their _id
+        const user = await User.findOne({ _id: req.user._id });
+
+        if (!user) {
+            console.log('User not found');
+            return next(new AppError('User not found', 404));
+        }
+
+        // Find the specified bank by ID
+        const bank = await Bank.findOne({ _id: bankId, user: user._id });
+
+        if (!bank) {
+            console.log('Bank not found');
+            return next(new AppError('Bank not found', 404));
+        }
+
+        res.status(200).json({
+            success: true,
+            data: bank,
+        });
+    } catch (error) {
+        console.error('Error getting bank:', error);
+        return next(new AppError('Internal server error', 500));
     }
 });

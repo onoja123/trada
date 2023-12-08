@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const DB_URL: string = 'mongodb+srv://onoja123:Gabriella12@cluster0.vrc59cx.mongodb.net/trada?retryWrites=true&w=majority';
+const DB_URL: string = 'mongodb+srv://velox:velox@cluster0.tinnxfh.mongodb.net/trada';
 
 const connectToDatabase = async () =>{
     try {

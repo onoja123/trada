@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import { IBank } from '../types';
 
 const bankSchema = new Schema<IBank>(
@@ -18,6 +18,12 @@ const bankSchema = new Schema<IBank>(
         },
         account_bank: {
             type: String,
+            required: true,
+        },
+        type: {
+            type: String,
+            enum: ["beneficiary", "personal"],
+            default: "personal",
             required: true,
         },
         createdAt: {

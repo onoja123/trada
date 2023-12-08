@@ -5,5 +5,6 @@ export interface IBank extends Document {
    account_name: string;
    account_number: number;
    account_bank: string;
+   type: string;
    createdAt: Date;
 }

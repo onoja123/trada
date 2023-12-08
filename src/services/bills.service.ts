@@ -1,7 +1,5 @@
 import axios from 'axios';
 
-const flutterwaveApiUrl = process.env.FLW_URL || ''
-
 const flutterwaveApiKey = process.env.FLW_API_KEY || 'FLWSECK_TEST-eab56b1d3cdf332da191b8dd2b04f22d-X'
 
 // Helper function to get all bils category using flutterwave API
@@ -14,7 +12,7 @@ export const getAllBill = async (filters?: Record<string, any>): Promise<any> =>
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${flutterwaveApiKey}`,
             },
-            params: filters, // Add filters as query parameters
+            params: filters,
         });
 
         return response.data;

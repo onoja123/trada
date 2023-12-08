@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import { Iwallet } from '../types/interfaces/wallet.inter';
 
 const walletSchema = new Schema<Iwallet>(
@@ -15,6 +15,18 @@ const walletSchema = new Schema<Iwallet>(
         balance: {
             type: Number,
             default: 0,
+        },
+        account_number: {
+            type: String,
+        },
+        bank_name: {
+            type: String,
+        },
+        order_ref: {
+            type: String,
+        },
+        flw_ref: {
+            type: String,
         },
         createdAt: {
             type: Date,

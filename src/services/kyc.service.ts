@@ -1,10 +1,8 @@
 import axios from 'axios';
 
 export interface BvnVerificationResponse {
-    status: string; // or a more specific type based on the actual response
-    // Add other properties as needed
+    status: string;
   }
-const flutterwaveApiUrl = process.env.FLW_URL || ''
 
 const flutterwaveApiKey = process.env.FLW_API_KEY || 'FLWSECK_TEST-eab56b1d3cdf332da191b8dd2b04f22d-X'
 

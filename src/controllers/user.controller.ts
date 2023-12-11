@@ -13,19 +13,19 @@ import {
   BvnVerificationResponse,
   initateBvn,
   verifyBvn
-}from '../services/kyc.service'
+} from '../services/kyc.service'
 import { createVirtualAccountNumber } from '../services/wallet.service';
 import Wallet from '../models/wallet.model';
 
 declare global {
-    namespace Express {
-      interface Request {
-        user?: Iuser;
-      }
+  namespace Express {
+    interface Request {
+      user?: Iuser;
     }
   }
+}
 
-  const mailer = new sendEmail();
+const mailer = new sendEmail();
 
 /**
  * @author Okpe Onoja <okpeonoja18@gmail.com>
@@ -35,36 +35,36 @@ declare global {
  * @type GET
  */
 export const getProfile = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    try {
+  try {
 
-      if (!req.user) {
-        return next(new AppError(
-            'User not authenticated', 
-            401
-        ));
+    if (!req.user) {
+      return next(new AppError(
+        'User not authenticated',
+        401
+      ));
     }
     // Find the user by their _id and populate the 'kyc' and 'wallet' fields
     const user = await User.findOne({ _id: req.user._id }).populate('kyc wallet');
 
-        if (!user) {
-          return next(new AppError(
-              'User not not found', 
-              404
-          ));
-      }
-
-        res.status(200).json({
-            status: 'success',
-            data: {
-                user, 
-            },
-        });
-    } catch (error) {
-        next(new AppError(
-          'Internal server error', 
-          500
+    if (!user) {
+      return next(new AppError(
+        'User not not found',
+        404
       ));
     }
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        user,
+      },
+    });
+  } catch (error) {
+    next(new AppError(
+      'Internal server error',
+      500
+    ));
+  }
 });
 
 /**
@@ -74,76 +74,76 @@ export const getProfile = catchAsync(async (req: Request, res: Response, next: N
  * @access PRIVATE
  * @type PUT
  */
-export const setResiAdd = catchAsync(async(req: Request, res: Response, next: NextFunction) => {
-    try {
-        const { id } = req.params;
+export const setResiAdd = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
 
-        if (!req.user) {
-            return next(new AppError(
-              'User not authenticated', 
-              401
-          ));
-        }
-
-        // Find the user by their _id
-        const user = await User.findOne({ _id: req.user._id });
-
-        if(!user){
-          console.log('User not found');
-            return next(new AppError(
-              'User not found', 
-              404
-          ));
-        }
-
-        if(user.isActive === false){
-          console.log('User not verified with OTP');
-            return next(new AppError(
-              'Please verify your otp and try again', 
-              401
-          ));
-        }
-
-        const { 
-            country,
-            state,
-            apartment,
-            street,
-            city,
-            postalCode
-        } = req.body;
-
-        const data = {
-          country,
-          state,
-          apartment,
-          street,
-          city,
-          postalCode
-        };
-
-        const newData = await User.findOneAndUpdate({ _id: id }, data, { new: true });
-
-        if (!newData) {
-          return next(new AppError(
-              'Cannot set Residence address, please try again', 
-              400
-          ));
-      }
-
-      await newData.save();
-      res.status(201).json({
-        success: true,
-        message: 'Residence address successfully added',
-        data: newData,
-      });
-
-    } catch (error) {
-        next(new AppError(
-          'Internal server error', 
-          500
+    if (!req.user) {
+      return next(new AppError(
+        'User not authenticated',
+        401
       ));
     }
+
+    // Find the user by their _id
+    const user = await User.findOne({ _id: req.user._id });
+
+    if (!user) {
+      console.log('User not found');
+      return next(new AppError(
+        'User not found',
+        404
+      ));
+    }
+
+    if (user.isActive === false) {
+      console.log('User not verified with OTP');
+      return next(new AppError(
+        'Please verify your otp and try again',
+        401
+      ));
+    }
+
+    const {
+      country,
+      state,
+      apartment,
+      street,
+      city,
+      postalCode
+    } = req.body;
+
+    const data = {
+      country,
+      state,
+      apartment,
+      street,
+      city,
+      postalCode
+    };
+
+    const newData = await User.findOneAndUpdate({ _id: id }, data, { new: true });
+
+    if (!newData) {
+      return next(new AppError(
+        'Cannot set Residence address, please try again',
+        400
+      ));
+    }
+
+    await newData.save();
+    res.status(201).json({
+      success: true,
+      message: 'Residence address successfully added',
+      data: newData,
+    });
+
+  } catch (error) {
+    next(new AppError(
+      'Internal server error',
+      500
+    ));
+  }
 })
 
 /**
@@ -153,96 +153,96 @@ export const setResiAdd = catchAsync(async(req: Request, res: Response, next: Ne
  * @access PRIVATE
  * @type PUT
  */
-export const setUpAcc = catchAsync(async(req:Request, res:Response, next: NextFunction)=>{
+export const setUpAcc = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   try {
 
-      const { id } = req.params;
+    const { id } = req.params;
 
-      if (!req.user) {
-        return next(new AppError(
-          'User not authenticated', 
-          401
+    if (!req.user) {
+      return next(new AppError(
+        'User not authenticated',
+        401
       ));
     }
 
     // Find the user by their _id
     const user = await User.findOne({ _id: req.user._id });
 
-    if(!user){
-        return next(new AppError(
-          'User not found', 
-          404
+    if (!user) {
+      return next(new AppError(
+        'User not found',
+        404
       ));
     }
 
-    if(user.isActive === false){
-        return next(new AppError(
-          'Please verify your otp and try again', 
-          401
+    if (user.isActive === false) {
+      return next(new AppError(
+        'Please verify your otp and try again',
+        401
       ));
     }
 
-      if (!user.isKycVerified === false) {
-        return next(new AppError(
-          'Please verify your bvn and try again', 
-          404
+    if (!user.isKycVerified === false) {
+      return next(new AppError(
+        'Please verify your bvn and try again',
+        404
       ));
     }
 
-      const { 
-        firstname,
-        lastname,
-        username,
-        email,
-        password,
-        dateOfBirth,
-        gender,
+    const {
+      firstname,
+      lastname,
+      username,
+      email,
+      password,
+      dateOfBirth,
+      gender,
     } = req.body;
 
-      // Check if the username is already taken
-      const existingUsername = await User.findOne({ username });
+    // Check if the username is already taken
+    const existingUsername = await User.findOne({ username });
 
-      if (existingUsername && existingUsername._id.toString() !== id) {
-          return next(new AppError(
-            'Username is already taken', 
-            400
-        ));
-      }
+    if (existingUsername && existingUsername._id.toString() !== id) {
+      return next(new AppError(
+        'Username is already taken',
+        400
+      ));
+    }
 
-      // Check if the email is already taken
-      const existingEmail = await User.findOne({ email });
+    // Check if the email is already taken
+    const existingEmail = await User.findOne({ email });
 
-      if (existingEmail && existingEmail._id.toString() !== id) {
-          return next(new AppError(
-            'Email is already taken', 
-            400
-        ));
-      }
-        // Generate tagNumber
-      const tagNumber = await generateTagNumber();
-                
-      // Hash the password
-      const hashedPassword = await bcrypt.hash(password, 12);
+    if (existingEmail && existingEmail._id.toString() !== id) {
+      return next(new AppError(
+        'Email is already taken',
+        400
+      ));
+    }
+    // Generate tagNumber
+    const tagNumber = await generateTagNumber();
 
-        const data = {
-            firstname,
-            lastname,
-            username,
-            email,
-            password: hashedPassword, 
-            dateOfBirth,
-            gender,
-            tagNumber,
-        };
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    const data = {
+      firstname,
+      lastname,
+      username,
+      email,
+      password: hashedPassword,
+      dateOfBirth,
+      gender,
+      tagNumber,
+    };
 
     const newUser = await User.findOneAndUpdate({ _id: id }, data, { new: true }).select('+password')
 
     if (!newUser) {
       return next(new AppError(
-          'Cannot set profile, please try again', 
-          400
+        'Cannot set profile, please try again',
+        400
       ));
-  }
+    }
 
     newUser.profileSet = true;
     await newUser.save();
@@ -256,67 +256,67 @@ export const setUpAcc = catchAsync(async(req:Request, res:Response, next: NextFu
   } catch (error) {
     console.log(error)
     return next(new AppError(
-      'Internal server error', 
+      'Internal server error',
       500
-  ))
+    ))
   }
 })
 
-  /**
- * @author Okpe Onoja <okpeonoja18@gmail.com>
- * @description initial bvn verification
- * @route `/api/user/setupBvn`
- * @access PRIVATE
- * @type POST
- */
-  export const InitiateBvnVerification = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const { bvn, firstname, lastname } = req.body;
-        console.log(req.body);
+/**
+* @author Okpe Onoja <okpeonoja18@gmail.com>
+* @description initial bvn verification
+* @route `/api/user/setupBvn`
+* @access PRIVATE
+* @type POST
+*/
+export const InitiateBvnVerification = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { bvn, firstname, lastname } = req.body;
+    console.log(req.body);
 
-        if (!req.user) {
-            return next(new AppError('User not authenticated', 401));
-        }
-
-        if (!bvn) {
-            return next(new AppError('BVN is required', 401));
-        }
-
-        // Find the user by their _id
-        const user = await User.findOne({ _id: req.user._id });
-
-        if (!user) {
-            return next(new AppError('User not found', 404));
-        }
-
-        const isBvnValid = await initateBvn(bvn, firstname, lastname);
-        console.log(isBvnValid);
-
-        if (isBvnValid) {
-            res.status(200).json({
-                success: true,
-                isBvnValid,
-            });
-        } else {
-            res.status(400).json({
-                success: false,
-                message: 'BVN verification failed',
-            });
-        }
-    } catch (error) {
-        console.error('Error in BVN verification:', error);
-        return next(new AppError('Internal server error', 500));
+    if (!req.user) {
+      return next(new AppError('User not authenticated', 401));
     }
+
+    if (!bvn) {
+      return next(new AppError('BVN is required', 401));
+    }
+
+    // Find the user by their _id
+    const user = await User.findOne({ _id: req.user._id });
+
+    if (!user) {
+      return next(new AppError('User not found', 404));
+    }
+
+    const isBvnValid = await initateBvn(bvn, firstname, lastname);
+    console.log(isBvnValid);
+
+    if (isBvnValid) {
+      res.status(200).json({
+        success: true,
+        isBvnValid,
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        message: 'BVN verification failed',
+      });
+    }
+  } catch (error) {
+    console.error('Error in BVN verification:', error);
+    return next(new AppError('Internal server error', 500));
+  }
 });
 
 
-  /**
- * @author Okpe Onoja <okpeonoja18@gmail.com>
- * @description verify user bvn and create account
- * @route `/api/user/verifybvn/:reference`
- * @access PRIVATE
- * @type POST
- */
+/**
+* @author Okpe Onoja <okpeonoja18@gmail.com>
+* @description verify user bvn and create account
+* @route `/api/user/verifybvn/:reference`
+* @access PRIVATE
+* @type POST
+*/
 export const verifyAndCreateAccount = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { payload } = req.body;
@@ -394,21 +394,21 @@ export const verifyAndCreateAccount = catchAsync(async (req: Request, res: Respo
           } else {
             user.identityVerificationStatus = 'approved';
             user.bvn = data.bvn;
-          // Create a new wallet for the user
-          const walletData = {
-            _user: user._id,
-            balance: 0,
-          };
+            // Create a new wallet for the user
+            const walletData = {
+              _user: user._id,
+              balance: 0,
+            };
 
-          const wallet = new Wallet(walletData);
-          await wallet.save();
+            const wallet = new Wallet(walletData);
+            await wallet.save();
 
-          // Link the wallet to the user
-          user.wallet = wallet._id;
+            // Link the wallet to the user
+            user.wallet = wallet._id;
 
-          // Save the user with the updated wallet information
-          await user.save();
-          
+            // Save the user with the updated wallet information
+            await user.save();
+
             const { data: accountData, status } = await createVirtualAccountNumber(
               user,
               user.email,
@@ -442,16 +442,16 @@ export const verifyAndCreateAccount = catchAsync(async (req: Request, res: Respo
               lastname: data.lastname,
               bvn: data.bvn,
             };
-  
+
             // Create a new instance of Kyc model
             const kyc = new Kyc(kycData);
 
-                      // Link the wallet to the user
-          user.kyc = kyc._id;
+            // Link the wallet to the user
+            user.kyc = kyc._id;
 
-          // Save the user with the updated wallet information
-          await user.save();
-  
+            // Save the user with the updated wallet information
+            await user.save();
+
             // Save Kyc document to the database
             await kyc.save();
             return res.status(200).json({
@@ -496,48 +496,48 @@ export const generateQr = catchAsync(async (req: Request, res: Response, next: N
 
     if (!req.user) {
       return next(new AppError(
-        'User not authenticated', 
+        'User not authenticated',
         401
-    ));
-  }
-      // Use req.user._id instead of req.params.id
-      const userId = req.user._id;
+      ));
+    }
+    // Use req.user._id instead of req.params.id
+    const userId = req.user._id;
 
-      // Check if user ID is available
-      if (!userId) {
-          return next(new AppError(
-              'User ID is required',
-              400
-          ));
-      }
+    // Check if user ID is available
+    if (!userId) {
+      return next(new AppError(
+        'User ID is required',
+        400
+      ));
+    }
 
-      // Find user by ID
-      const user = await User.findById(userId);
+    // Find user by ID
+    const user = await User.findById(userId);
 
-      // Check if user exists
-      if (!user) {
-          return next(new AppError(
-              'User not found',
-              404
-          ));
-      }
+    // Check if user exists
+    if (!user) {
+      return next(new AppError(
+        'User not found',
+        404
+      ));
+    }
 
-      // Generate QR code with user ID and firstname as data
-      const qrData = `localhost:3000/${user._id}/${user.firstname}`;
-      const qrCode = await qrcode.toDataURL(qrData);
+    // Generate QR code with user ID and firstname as data
+    const qrData = `localhost:3000/${user._id}/${user.firstname}`;
+    const qrCode = await qrcode.toDataURL(qrData);
 
-      res.status(200).json({
-          success: true,
-          message: 'QR Code generated successfully',
-          data: qrCode,
-      });
+    res.status(200).json({
+      success: true,
+      message: 'QR Code generated successfully',
+      data: qrCode,
+    });
 
   } catch (error) {
-      console.error('Error generating QR code:', error);
-      return next(new AppError(
-          'Internal server error',
-          500
-      ));
+    console.error('Error generating QR code:', error);
+    return next(new AppError(
+      'Internal server error',
+      500
+    ));
   }
 });
 
@@ -551,50 +551,50 @@ export const generateQr = catchAsync(async (req: Request, res: Response, next: N
  */
 export const setupPin = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   try {
-      if (!req.user) {
-          return next(new AppError(
-            'User not authenticated', 
-            401
-        ));
-      }
+    if (!req.user) {
+      return next(new AppError(
+        'User not authenticated',
+        401
+      ));
+    }
 
-      const { pin } = req.body;
+    const { pin } = req.body;
 
-      const user = await User.findOne({ _id: req.user._id });
+    const user = await User.findOne({ _id: req.user._id });
 
-      if (!user) {
-          return next(new AppError(
-            'User not found', 
-            404
-        ));
-      }
+    if (!user) {
+      return next(new AppError(
+        'User not found',
+        404
+      ));
+    }
 
-      // Check if the user already has a PIN set up
-      if (user.pin) {
-          return next(new AppError(
-            'Transaction PIN already set up', 
-            400
-        ));
-      }
+    // Check if the user already has a PIN set up
+    if (user.pin) {
+      return next(new AppError(
+        'Transaction PIN already set up',
+        400
+      ));
+    }
 
-      // Hash the new PIN
-      const hashedPin = await bcrypt.hash(pin, 12);
+    // Hash the new PIN
+    const hashedPin = await bcrypt.hash(pin, 12);
 
-      // Set up and save the new hashed PIN
-      user.pin = hashedPin;
-      await user.save();
+    // Set up and save the new hashed PIN
+    user.pin = hashedPin;
+    await user.save();
 
-        res.status(200).json({
-            success: true,
-            message: "Pin setup successfully",
-            data: user,
-        });
+    res.status(200).json({
+      success: true,
+      message: "Pin setup successfully",
+      data: user,
+    });
 
   } catch (error) {
-      console.error('Error setting up PIN:', error);
-      next(new AppError(
-        'Internal server error', 
-        500
+    console.error('Error setting up PIN:', error);
+    next(new AppError(
+      'Internal server error',
+      500
     ));
   }
 });
@@ -608,58 +608,58 @@ export const setupPin = catchAsync(async (req: Request, res: Response, next: Nex
  */
 export const changePin = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   try {
-      if (!req.user) {
-          return next(new AppError(
-            'User not authenticated', 
-            401
-        ));
-      }
+    if (!req.user) {
+      return next(new AppError(
+        'User not authenticated',
+        401
+      ));
+    }
 
-      const { oldPin, newPin } = req.body;
+    const { oldPin, newPin } = req.body;
 
-      const user = await User.findOne({ _id: req.user._id });
+    const user = await User.findOne({ _id: req.user._id });
 
-      if (!user) {
-          return next(new AppError(
-            'User not found', 
-            404
-        ));
-      }
+    if (!user) {
+      return next(new AppError(
+        'User not found',
+        404
+      ));
+    }
 
-      // Verify the old PIN
-      const isOldPinValid = await user.matchTransactionPin(oldPin);
+    // Verify the old PIN
+    const isOldPinValid = await user.matchTransactionPin(oldPin);
 
-      if (!isOldPinValid) {
-          return next(new AppError(
-            'Invalid Old Pin', 
-            401
-        ));
-      }
+    if (!isOldPinValid) {
+      return next(new AppError(
+        'Invalid Old Pin',
+        401
+      ));
+    }
 
-      // Check if the new PIN is the same as the old one
-      if (oldPin === newPin) {
-          return next(new AppError(
-            'New PIN cannot be the same as the old one', 
-            401
-        ));
-      }
+    // Check if the new PIN is the same as the old one
+    if (oldPin === newPin) {
+      return next(new AppError(
+        'New PIN cannot be the same as the old one',
+        401
+      ));
+    }
 
-      // Hash and set up the new PIN
-      const hashedNewPin = await bcrypt.hash(newPin, 12);
-      user.pin = hashedNewPin;
-      await user.save();
+    // Hash and set up the new PIN
+    const hashedNewPin = await bcrypt.hash(newPin, 12);
+    user.pin = hashedNewPin;
+    await user.save();
 
-      res.status(200).json({
-          success: true,
-          message: "Pin changed successfully",
-          data: user,
-      });
+    res.status(200).json({
+      success: true,
+      message: "Pin changed successfully",
+      data: user,
+    });
 
   } catch (error) {
-      console.error('Error changing PIN:', error);
-      next(new AppError(
-        'Internal server error', 
-        500
+    console.error('Error changing PIN:', error);
+    next(new AppError(
+      'Internal server error',
+      500
     ));
   }
 });
@@ -673,42 +673,42 @@ export const changePin = catchAsync(async (req: Request, res: Response, next: Ne
  */
 export const confirmPin = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   try {
-      if (!req.user) {
-          return next(new AppError(
-            'User not authenticated', 
-            401
-        ));
-      }
+    if (!req.user) {
+      return next(new AppError(
+        'User not authenticated',
+        401
+      ));
+    }
 
-      const { pin } = req.body;
+    const { pin } = req.body;
 
-      const user = await User.findOne({ _id: req.user._id });
+    const user = await User.findOne({ _id: req.user._id });
 
-      if (!user) {
-          return next(new AppError(
-            'User not found', 
-            404
-        ));
-      }
+    if (!user) {
+      return next(new AppError(
+        'User not found',
+        404
+      ));
+    }
 
-      const isTrue = await user.matchTransactionPin(pin);
+    const isTrue = await user.matchTransactionPin(pin);
 
-      if (!isTrue) {
-          return next(new AppError(
-            'Invalid Pin', 
-            401
-        ));
-      }
+    if (!isTrue) {
+      return next(new AppError(
+        'Invalid Pin',
+        401
+      ));
+    }
 
-      res.status(200).json({
-          success: true,
-          data: user,
-      });
+    res.status(200).json({
+      success: true,
+      data: user,
+    });
 
   } catch (error) {
-      next(new AppError(
-        'Internal server error', 
-        500
+    next(new AppError(
+      'Internal server error',
+      500
     ));
   }
 });

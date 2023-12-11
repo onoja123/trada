@@ -1,4 +1,4 @@
-import { CreateFlwAccount, FundWalletWithCard, GetAccount } from '../types';
+import { CreateFlwAccount, FundWithCard, GetAccount } from '../types';
 import AppError from '../utils/appError';
 import axios from 'axios';
 
@@ -52,7 +52,7 @@ export const getAccount = async (data: GetAccount) => {
 };
 
 // Helper function to fund wallet with card
-export const fundWalletWithCard = async (data: FundWalletWithCard): Promise<any> => {
+export const fundWalletWithCard = async (data: FundWithCard): Promise<any> => {
 
     const flwApiUrl = 'https://api.flutterwave.com/v3/virtual-account-numbers';
     const response = await axios.post(

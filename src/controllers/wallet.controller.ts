@@ -1,12 +1,13 @@
+import { FundWithCard } from '../types';
 import { NextFunction, Request, Response } from 'express';
 import AppError from '../utils/appError';
 import catchAsync from '../utils/catchAsync';
 import User from '../models/user.model';
 import Wallet from '../models/wallet.model';
 import {
-     fundWalletWithCard,
-     transferToBank
-     } from '../services/wallet.service';
+    fundWalletWithCard,
+    transferToBank
+} from '../services/wallet.service';
 import Transaction from '../models/transaction.model';
 
 /**
@@ -170,11 +171,11 @@ export const sendMoneyToUser = catchAsync(async (req: Request, res: Response, ne
  * @access PRIVATE
  * @type POST
  */
-export const fundWalletBanktransfer = catchAsync(async(req:Request, res:Response, next: NextFunction)=>{
+export const fundWalletBanktransfer = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (!req.user) {
             return next(new AppError(
-                'User not authenticated', 
+                'User not authenticated',
                 401
             ));
         }
@@ -184,34 +185,34 @@ export const fundWalletBanktransfer = catchAsync(async(req:Request, res:Response
 
         if (!user) {
             return next(new AppError(
-                'User not found', 
+                'User not found',
                 404
             ));
         }
 
         const wallet = await Wallet.findOne({ _user: req.user })
-        .populate({
-            path: '_transactions',
-            options: {
-                sort: {
-                    date: -1,
+            .populate({
+                path: '_transactions',
+                options: {
+                    sort: {
+                        date: -1,
+                    },
                 },
-            },
-        });
+            });
 
-    if (!wallet && user.isActive === false) {
-        return next(new AppError(
-            'Wallet not found', 
-            404
-        ));
-    }
-    
-    
+        if (!wallet && user.isActive === false) {
+            return next(new AppError(
+                'Wallet not found',
+                404
+            ));
+        }
+
+
     } catch (error) {
         return next(new AppError(
-            'Internal server error', 
+            'Internal server error',
             500
-        ))  
+        ))
     }
 })
 
@@ -225,45 +226,40 @@ export const fundWalletBanktransfer = catchAsync(async(req:Request, res:Response
 export const fundWalletCard = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (!req.user) {
-            return next(new AppError(
-                'User not authenticated', 
-                401
-            ));
+            return next(new AppError('User not authenticated', 401));
         }
 
         // Find the user by their _id
         const user = await User.findOne({ _id: req.user._id });
 
         if (!user) {
-            return next(new AppError(
-                'User not found', 
-                404
-            ));
+            return next(new AppError('User not found', 404));
         }
 
         const { cardNumber, cardExpiry, cardCVV, amount } = req.body;
 
         // Basic input validation
         if (!cardNumber || !cardExpiry || !cardCVV || !amount) {
-            return next(new AppError(
-                'Card details and amount are required', 
-                400
-            ));
+            return next(new AppError('Card details and amount are required', 400));
         }
 
-        const response = await fundWalletWithCard(cardNumber, cardExpiry, cardCVV, amount);
+        const fundData: FundWithCard = ({ cardNumber, cardExpiry, cardCVV, amount });
 
-        const wallet = await Wallet.findOneAndUpdate(
+        const response = await fundWalletWithCard(fundData);
+
+        if (response.status !== 200) {
+            // If the external API call fails, handle it here
+            return next(new AppError('Failed to process the payment', response.status));
+        }
+
+        const updatedWallet = await Wallet.findOneAndUpdate(
             { _user: user },
             { $inc: { balance: amount } },
             { new: true }
         );
 
-        if (!wallet) {
-            return next(new AppError(
-                'Wallet not found',
-                404
-            ));
+        if (!updatedWallet) {
+            return next(new AppError('Wallet not found', 404));
         }
 
         // Create a transaction record
@@ -271,8 +267,8 @@ export const fundWalletCard = catchAsync(async (req: Request, res: Response, nex
             sender: user._id,
             recipient: user._id,
             amount: amount,
-            type: 'credit', 
-            paymentMethod: 'card', 
+            type: 'credit',
+            paymentMethod: 'card',
             reference: 'Funding with card',
             date: new Date(),
         });
@@ -281,21 +277,17 @@ export const fundWalletCard = catchAsync(async (req: Request, res: Response, nex
         await transaction.save();
 
         // Handle the response accordingly
-        res.status(response.status).json({
+        res.status(200).json({
             success: true,
             message: 'Wallet funded successfully',
-            wallet: wallet, 
+            wallet: updatedWallet,
         });
-
     } catch (error) {
         console.error('Error funding wallet with card:', error);
         if (error instanceof AppError) {
             return next(error);
         } else {
-            return next(new AppError(
-                'Internal server error', 
-                500
-            ));
+            return next(new AppError('Internal server error', 500));
         }
     }
 });
@@ -313,14 +305,14 @@ export const requestFunds = catchAsync(async (req: Request, res: Response, next:
 
         if (!username && !tagNumber) {
             return next(new AppError(
-                'Username or tagNumber is required', 
+                'Username or tagNumber is required',
                 400
             ));
         }
 
         if (!amount || isNaN(amount)) {
             return next(new AppError(
-                'Invalid or missing amount', 
+                'Invalid or missing amount',
                 400
             ));
         }
@@ -330,7 +322,7 @@ export const requestFunds = catchAsync(async (req: Request, res: Response, next:
 
         if (!recipient) {
             return next(new AppError(
-                'Recipient not found', 
+                'Recipient not found',
                 404
             ));
         }
@@ -360,7 +352,7 @@ export const transferToBankFromWalletHandler = catchAsync(async (req: Request, r
     try {
         if (!req.user) {
             return next(new AppError(
-                'User not authenticated', 
+                'User not authenticated',
                 401
             ));
         }
@@ -370,7 +362,7 @@ export const transferToBankFromWalletHandler = catchAsync(async (req: Request, r
 
         if (!user) {
             return next(new AppError(
-                'User not found', 
+                'User not found',
                 404
             ));
         }
@@ -380,7 +372,7 @@ export const transferToBankFromWalletHandler = catchAsync(async (req: Request, r
         // Basic input validation
         if (!account_bank || !account_number || !amount || !currency || !narration) {
             return next(new AppError(
-                'Please fill in the required fields', 
+                'Please fill in the required fields',
                 400
             ));
         }
@@ -415,18 +407,18 @@ export const transferToBankFromWalletHandler = catchAsync(async (req: Request, r
         }
 
         // Create a transaction record for the sender
-            const senderTransaction = new Transaction({
-                sender: user._id,
-                recipient: account_bank, // Bank transfer, so no specific recipient
-                amount: amount,
-                type: 'debit', // Assuming transferring to bank is a debit transaction
-                paymentMethod: 'wallet',
-                reference: 'Transfer to Bank',
-                date: new Date(),
-            });
-    
-            // Save the transaction record
-            await senderTransaction.save();
+        const senderTransaction = new Transaction({
+            sender: user._id,
+            recipient: account_bank, // Bank transfer, so no specific recipient
+            amount: amount,
+            type: 'debit', // Assuming transferring to bank is a debit transaction
+            paymentMethod: 'wallet',
+            reference: 'Transfer to Bank',
+            date: new Date(),
+        });
+
+        // Save the transaction record
+        await senderTransaction.save();
 
 
         // Create a transaction record for the sender
@@ -447,16 +439,16 @@ export const transferToBankFromWalletHandler = catchAsync(async (req: Request, r
         res.status(response.status).json({
             success: true,
             message: 'Funds transferred to bank successfully',
-            wallet: wallet, 
+            wallet: wallet,
         });
 
     } catch (error) {
         console.error('Error transferring funds to bank:', error);
         if (error instanceof AppError) {
-            return next(error); 
+            return next(error);
         } else {
             return next(new AppError(
-                'Internal server error', 
+                'Internal server error',
                 500
             ));
         }

@@ -10,7 +10,7 @@ export interface GetAccount {
                     order_ref: string;
 }
 
-export interface FundWalletWithCard {
+export interface FundWithCard {
                     cardNumber: string,
                     cardExpiry: string,
                     cardCVV: string,

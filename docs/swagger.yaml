@@ -1,0 +1,110 @@
+paths:
+  /auth/signup:
+    post:
+      summary: Sign up a user
+      tags:
+        - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignupRequest"
+      responses:
+        200:
+          description: "Accepted"
+        201:
+          description: "Created"
+        400:
+          description: "Bad Request"
+        409:
+          description: "Conflict"
+        404:
+          description: "Not Found"
+        500:
+          description: "Server Error"
+
+  /auth/verify:
+    post:
+      summary: Verify sign-up with OTP
+      tags:
+        - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifyRequest"
+      responses:
+        200:
+          description: "Accepted"
+        400:
+          description: "Bad Request"
+        404:
+          description: "Not Found"
+        500:
+          description: "Server Error"
+
+  /auth/signin:
+    post:
+      summary: Sign in a user
+      tags:
+        - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SigninRequest"
+      responses:
+        200:
+          description: "Accepted"
+        400:
+          description: "Bad Request"
+        409:
+          description: "Conflict"
+        404:
+          description: "Not Found"
+        500:
+          description: "Server Error"
+
+  /auth/forgetPassword:
+    post:
+      summary: Request to reset password
+      tags:
+        - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ForgetPasswordRequest"
+      responses:
+        200:
+          description: "Accepted"
+        400:
+          description: "Bad Request"
+        409:
+          description: "Conflict"
+        404:
+          description: "Not Found"
+        500:
+          description: "Server Error"
+
+  /auth/verifyPassword:
+    post:
+      summary: Verify password reset with OTP
+      tags:
+        - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifyForgetPasswordRequest"
+      responses:
+        200:
+          description: "Accepted"
+        400:
+          description: "Bad Request"
+        409:
+          description: "Conflict"
+        404:
+          description: "Not Found"
+        500:
+          description: "Server Error"

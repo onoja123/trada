@@ -1,0 +1,43 @@
+{
+  "compilerOptions": {
+    "target": "es2022",
+    "module": "commonjs",
+    "lib": ["es2022", "dom"],
+    "allowJs": true,
+    "checkJs": true,
+    "declaration": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": "./",
+    "removeComments": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "pretty": true,
+    "importHelpers": true,
+    "experimentalDecorators": true,
+    "noEmit": false,
+    "emitDecoratorMetadata": true,
+    "allowSyntheticDefaultImports": true,
+    "typeRoots": ["node_modules/@types"],
+    "baseUrl": "src",
+    "paths": {
+      "@/*": ["*"],
+      "@config/*": ["config/*"],
+      "@controllers/*": ["controllers/*"],
+      "@controllers": ["controllers"],
+      "@interfaces/*": ["interfaces/*"],
+      "@middlenames/*": ["middlenames/*"],
+      "@exceptions/*": ["exceptions/*"],
+      "@routes/*": ["routes/*"],
+      "@validators": ["validators"],
+      "@core/*": ["core/*"],
+      "@services/*": ["services/*"],
+      "@models/*": ["models/*"],
+      "@templates": ["templates"],
+      "@utils/*": ["utils/*"]
+    }
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules"]
+}
